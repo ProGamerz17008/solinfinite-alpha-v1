@@ -39,7 +39,7 @@ The platform is designed around strict **AI Responsibility Separation**, separat
 
 ### 3. 🖼️ Multimodal Vision AI Chart Analysis (Apify & Gemini 2.0 Vision)
 - **Pixel-Level Chart Inspection**: Upload chart snapshots or graphs directly into the Chatbot drawer.
-- **Apify & Gemini Vision API**: Uses the Apify API (`apify_api_cefTtFJCjaBeh3d5s45bYY40qrDTcv0Jpder`) and Gemini 2.0 Flash Vision to identify candlestick patterns (Hammer, Bullish Engulfing, Doji), trendlines, support/resistance rebound levels, and RSI skew.
+- **Apify & Gemini Vision API**: Uses the Apify API and Gemini 2.0 Flash Vision to identify candlestick patterns (Hammer, Bullish Engulfing, Doji), trendlines, support/resistance rebound levels, and RSI skew.
 
 ### 4. 📈 4-Chart Multi-View (TradingView Integration)
 - **Simultaneous Monitoring**: View up to 4 interactive stock/crypto charts side-by-side (SPY, NVDA, BTC/USD, AAPL, QQQ, TSLA).
@@ -74,38 +74,6 @@ graph TD
 
 ---
 
-## 🚀 How to Launch on Netlify (Step-by-Step Guide)
-
-Deploying **SOLINFINITE ALPHA V1** to **Netlify** via GitHub takes less than 3 minutes.
-
-### Step 1: Push Project to GitHub
-
-1. Open terminal in the project directory:
-   ```bash
-   git add .
-   git commit -m "Deploy SOLINFINITE ALPHA V1 to Netlify"
-   git push origin main
-   ```
-
-### Step 2: Deploy on Netlify
-
-1. Log into your [Netlify Dashboard](https://app.netlify.com).
-2. Click **Add new site** -> **Import an existing project**.
-3. Select **GitHub** and authorize Netlify.
-4. Select your repository: **`solinfinite-alpha-v1`**.
-5. Netlify will automatically detect `netlify.toml` included in this repository:
-   - **Build Command**: `pip install -r requirements.txt`
-   - **Publish Directory**: `static`
-6. Under **Environment Variables**, add:
-   - `GEMINI_API_KEY`: Your Gemini API Key
-   - `GROQ_API_KEY`: Your Groq API Key
-   - `APIFY_API_KEY`: Your Apify Token
-   - `ALPACA_API_KEY`: Your Alpaca Paper Key
-   - `ALPACA_SECRET_KEY`: Your Alpaca Paper Secret Key
-7. Click **Deploy Site**. Netlify will build and publish your project!
-
----
-
 ## 💻 Local Installation & Setup
 
 1. **Clone the Repository**:
@@ -126,13 +94,13 @@ Deploying **SOLINFINITE ALPHA V1** to **Netlify** via GitHub takes less than 3 m
    ```
 
 3. **Configure Environment Variables (`.env`)**:
-   Create a `.env` file in the root directory:
+   Create a `.env` file in the root directory (do not commit `.env` to GitHub):
    ```env
-   ALPACA_API_KEY=PK4EAUYBC7UG5NXBR23MAZZWYN
-   ALPACA_SECRET_KEY=J4eBjKpKWWHvcq8ebpoEemPmWRw6pnmRHwzcBXXEhZ4g
-   GEMINI_API_KEY=AQ.Ab8RN6IJp5SQd-JLMrFu9SEbkHOnffdEVFfYYcxo6xmqCcQ6cg
-   GROQ_API_KEY=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
-   APIFY_API_KEY=apify_api_cefTtFJCjaBeh3d5s45bYY40qrDTcv0Jpder
+   ALPACA_API_KEY=YOUR_ALPACA_API_KEY
+   ALPACA_SECRET_KEY=YOUR_ALPACA_SECRET_KEY
+   GEMINI_API_KEY=YOUR_GEMINI_API_KEY
+   GROQ_API_KEY=YOUR_GROQ_API_KEY
+   APIFY_API_KEY=YOUR_APIFY_API_KEY
    ADMIN_EMAIL=founder.hypernovatechnology@gmail.com
    ```
 
