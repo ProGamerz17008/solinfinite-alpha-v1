@@ -2,12 +2,12 @@
 SOLINFINITE ALPHA V1 - Powered by HyperNova Technology
 =========================================================================================
 Architecture & AI Responsibility Separation:
-1. GEMINI_API_KEY ("AQ.Ab8RN6IJp5SQd-JLMrFu9SEbkHOnffdEVFfYYcxo6xmqCcQ6cg"):
+1. GEMINI_API_KEY:
    STRICTLY THE MAIN TRADING AI ENGINE. Responsible for chart technical analysis, RSI/MACD
    graph calculation, trade confidence scoring, and signal generation.
-2. GROQ_API_KEY ("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"):
+2. GROQ_API_KEY:
    STRICTLY FOR THE CHATBOT API (/api/chat). Answers user prompts & option tutoring.
-3. APIFY_API_KEY ("apify_api_cefTtFJCjaBeh3d5s45bYY40qrDTcv0Jpder"):
+3. APIFY_API_KEY:
    Apify Image AI API for chart image inspection and graph vision analysis.
 4. REAL ALPACA PAPER TRADING EXECUTION:
    Supports default master Alpaca Paper account + Custom Alpaca Paper API Keys for all account roles.
@@ -28,6 +28,22 @@ from email.mime.text import MIMEText
 import requests
 from flask import Flask, render_template, jsonify, request, redirect, url_for, session, make_response
 
+# Helper function to load .env file manually if python-dotenv is not installed
+def load_env_file():
+    env_path = os.path.join(os.path.dirname(__file__), ".env")
+    if os.path.exists(env_path):
+        try:
+            with open(env_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        k, v = line.split("=", 1)
+                        os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
+        except Exception:
+            pass
+
+load_env_file()
+
 # Alpaca SDK imports
 try:
     from alpaca.trading.client import TradingClient
@@ -39,21 +55,21 @@ except ImportError:
 
 # Initialize Flask App
 app = Flask(__name__, template_folder='templates', static_folder='static')
-app.secret_key = "solinfinte-alpha-production-secret-key-2026"
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "solinfinte-alpha-production-secret-key-2026")
 logging.basicConfig(level=logging.INFO)
 
 # ==============================================================================
-# CONFIGURATION & HARDCODED API KEYS
+# CONFIGURATION & ENVIRONMENT API KEYS
 # ==============================================================================
-ALPACA_API_KEY = "PK4EAUYBC7UG5NXBR23MAZZWYN"
-ALPACA_SECRET_KEY = "J4eBjKpKWWHvcq8ebpoEemPmWRw6pnmRHwzcBXXEhZ4g"
+ALPACA_API_KEY = os.environ.get("ALPACA_API_KEY", "")
+ALPACA_SECRET_KEY = os.environ.get("ALPACA_SECRET_KEY", "")
 
 # AI API Keys
-GEMINI_API_KEY = "AQ.Ab8RN6IJp5SQd-JLMrFu9SEbkHOnffdEVFfYYcxo6xmqCcQ6cg"
-GROQ_API_KEY = "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"
-APIFY_API_KEY = "apify_api_cefTtFJCjaBeh3d5s45bYY40qrDTcv0Jpder"
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+APIFY_API_KEY = os.environ.get("APIFY_API_KEY", "")
 
-ADMIN_EMAIL = "founder.hypernovatechnology@gmail.com"
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "founder.hypernovatechnology@gmail.com")
 
 # Initialize Master Alpaca Client (PAPER TRADING ACCOUNT)
 alpaca_client = None
@@ -486,7 +502,6 @@ def call_gemini_trading_ai(symbol, indicator_data=None):
 def call_groq_chatbot(user_prompt, system_prompt="You are Solinfinte ALPHA AI Chatbot Assistant."):
     """
     GROQ AI & GEMINI FALLBACK FOR THE CHATBOT.
-    Key: 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
     """
     models_to_try = [
         "groq/compound",
@@ -548,7 +563,6 @@ def call_apify_image_ai(image_base64=None):
     """
     Integrates Apify Image AI API & Google Gemini Multimodal Vision API for chart image inspection.
     Reads actual image pixels, technical candlestick patterns, RSI levels, support/resistance, and trend direction.
-    Key: apify_api_cefTtFJCjaBeh3d5s45bYY40qrDTcv0Jpder
     """
     if not image_base64:
         return "No image provided for chart analysis."
