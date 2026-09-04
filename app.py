@@ -464,7 +464,7 @@ def call_gemini_trading_ai(symbol, indicator_data=None):
     }
 
     headers = {"Content-Type": "application/json"}
-    models_to_try = ["gemini-2.0-flash", "gemini-1.5-flash-latest", "gemini-1.5-pro", "gemini-pro"]
+    models_to_try = ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-flash-latest", "gemini-2.5-flash"]
 
     for m_name in models_to_try:
         try:
@@ -506,11 +506,11 @@ def call_groq_chatbot(user_prompt, system_prompt="You are Solinfinte ALPHA AI Ch
     GROQ AI & GEMINI FALLBACK FOR THE CHATBOT.
     """
     models_to_try = [
-        "groq/compound",
-        "openai/gpt-oss-120b",
-        "groq/compound-mini",
         "qwen/qwen3.6-27b",
-        "openai/gpt-oss-20b"
+        "openai/gpt-oss-120b",
+        "qwen/qwen3.8-27b",
+        "openai/gpt-oss-20b",
+        "groq/compound"
     ]
     for model_name in models_to_try:
         try:
@@ -537,24 +537,25 @@ def call_groq_chatbot(user_prompt, system_prompt="You are Solinfinte ALPHA AI Ch
         except Exception as e:
             logging.error(f"Groq Chatbot model {model_name} exception: {e}")
 
-    # Fallback to Gemini 2.0 Flash for Chatbot if Groq is slow or unavailable
-    try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
-        payload = {
-            "contents": [{
-                "parts": [
-                    {"text": f"System Context:\n{system_prompt}\n\nUser Question:\n{user_prompt}"}
-                ]
-            }]
-        }
-        res = requests.post(url, json=payload, timeout=8)
-        if res.status_code == 200:
-            res_data = res.json()
-            content = res_data['candidates'][0]['content']['parts'][0]['text']
-            if content and content.strip():
-                return content
-    except Exception as gem_err:
-        logging.error(f"Gemini Chatbot fallback exception: {gem_err}")
+    # Fallback to Gemini 3.6 Flash for Chatbot if Groq is slow or unavailable
+    for gem_m in ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-flash-latest"]:
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{gem_m}:generateContent?key={GEMINI_API_KEY}"
+            payload = {
+                "contents": [{
+                    "parts": [
+                        {"text": f"System Context:\n{system_prompt}\n\nUser Question:\n{user_prompt}"}
+                    ]
+                }]
+            }
+            res = requests.post(url, json=payload, timeout=8)
+            if res.status_code == 200:
+                res_data = res.json()
+                content = res_data['candidates'][0]['content']['parts'][0]['text']
+                if content and content.strip():
+                    return content
+        except Exception as gem_err:
+            logging.error(f"Gemini Chatbot fallback exception for {gem_m}: {gem_err}")
 
     return None
 
@@ -576,32 +577,33 @@ def call_apify_image_ai(image_base64=None):
         if "png" in header: mime_type = "image/png"
         elif "webp" in header: mime_type = "image/webp"
 
-    # 1. Try Google Gemini Multimodal Vision Engine (Gemini 2.0 Flash) with direct base64 image data
-    try:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
-        payload = {
-            "contents": [{
-                "parts": [
-                    {
-                        "inline_data": {
-                            "mime_type": mime_type,
-                            "data": clean_b64
+    # 1. Try Google Gemini Multimodal Vision Engine (Gemini 3.6 Flash) with direct base64 image data
+    for vision_m in ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-flash-latest"]:
+        try:
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{vision_m}:generateContent?key={GEMINI_API_KEY}"
+            payload = {
+                "contents": [{
+                    "parts": [
+                        {
+                            "inlineData": {
+                                "mimeType": mime_type,
+                                "data": clean_b64
+                            }
+                        },
+                        {
+                            "text": "Inspect this financial chart snapshot carefully. Describe the visible price trend, candlestick patterns, support/resistance levels, RSI/MACD indicators, and give a clear BUY or SELL quantitative rating."
                         }
-                    },
-                    {
-                        "text": "Inspect this financial chart snapshot carefully. Describe the visible price trend, candlestick patterns, support/resistance levels, RSI/MACD indicators, and give a clear BUY or SELL quantitative rating."
-                    }
-                ]
-            }]
-        }
-        res = requests.post(url, json=payload, timeout=8)
-        if res.status_code == 200:
-            data = res.json()
-            text = data['candidates'][0]['content']['parts'][0]['text'].strip()
-            if text:
-                return f"⚡ **Gemini & Apify Multimodal Vision Chart Analysis:**\n{text}"
-    except Exception as e:
-        logging.warning(f"Gemini Vision API exception: {e}")
+                    ]
+                }]
+            }
+            res = requests.post(url, json=payload, timeout=8)
+            if res.status_code == 200:
+                data = res.json()
+                text = data['candidates'][0]['content']['parts'][0]['text'].strip()
+                if text:
+                    return f"⚡ **Gemini & Apify Multimodal Vision Chart Analysis:**\n{text}"
+        except Exception as e:
+            logging.warning(f"Gemini Vision API exception for {vision_m}: {e}")
 
     # 2. Try Apify Vision API
     try:
@@ -809,7 +811,7 @@ def get_account_data(user_key="admin"):
                 "user_role": user_role,
                 "profit_earned": user_info.get("profit_earned", 3420.50),
                 "max_investment_limit": max_investment_limit,
-                "has_custom_keys": bool(session.get('custom_alpaca_key')),
+                "has_custom_keys": bool(session.get('custom_alpaca_key')) if has_request_context() else False,
                 "raw": {
                     "portfolio_value": f"${equity:,.2f}",
                     "cash_available": f"${cash:,.2f}",
@@ -832,7 +834,7 @@ def get_account_data(user_key="admin"):
         "user_role": user_role,
         "profit_earned": user_info.get("profit_earned", 3420.50),
         "max_investment_limit": max_investment_limit,
-        "has_custom_keys": bool(session.get('custom_alpaca_key')),
+        "has_custom_keys": bool(session.get('custom_alpaca_key')) if has_request_context() else False,
         "raw": {
             "portfolio_value": f"${base_eq:,.2f}",
             "cash_available": f"${base_eq:,.2f}",
