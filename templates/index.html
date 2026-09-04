@@ -131,11 +131,11 @@
                             SOLINFINITE ALPHA V1
                         </h1>
                         <span id="role-badge" class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono">
-                            {{ role.upper() if role else 'EVALUATOR' }} MODE
+                            EVALUATOR MODE
                         </span>
                     </div>
                     <p class="text-xs text-slate-400 font-mono mt-0.5">
-                        Continuous 24/7 AI Trader &bull; Alert Mail: <span id="header-alert-email" onclick="promptUpdateAlertEmail()" class="text-cyan-400 font-semibold cursor-pointer hover:underline" title="Click to edit alert email">{{ alert_email }}</span>
+                        Continuous 24/7 AI Trader &bull; Alert Mail: <span id="header-alert-email" onclick="promptUpdateAlertEmail()" class="text-cyan-400 font-semibold cursor-pointer hover:underline" title="Click to edit alert email">evaluator.judge@hackathon.org</span>
                         <button onclick="promptUpdateAlertEmail()" class="ml-1 text-[10px] text-purple-400 hover:text-purple-300" title="Change Alert Email"><i class="fa-solid fa-pen-to-square"></i></button>
                     </p>
                 </div>
@@ -175,56 +175,8 @@
             </div>
         </header>
 
-        <!-- ROLE SPECIFIC DYNAMIC DASHBOARD BANNERS & CONTROLS -->
-        {% if role == 'admin_master' %}
-        <!-- MASTER ADMIN SYSTEM CONTROL PANEL -->
-        <div class="glass-card rounded-2xl p-5 border border-cyan-500/40 bg-slate-950/80 space-y-3 shadow-xl">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center">
-                        <i class="fa-solid fa-sliders text-cyan-400 text-lg"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-sm font-bold text-white font-mono flex items-center gap-2">
-                            Master Admin Control Center & System Oversight
-                            <span id="ai-status-indicator" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">24/7 AI ACTIVE</span>
-                        </h2>
-                        <p class="text-xs text-slate-400 font-mono">Real-time Thread Controls, Risk Management & Emergency Overrides</p>
-                    </div>
-                </div>
-
-                <div class="flex flex-wrap items-center gap-2">
-                    <button id="btn-toggle-ai-loop" onclick="adminToggleAiLoop()" class="px-3 py-1.5 rounded-xl bg-purple-950 hover:bg-purple-900 text-purple-300 text-xs font-bold border border-purple-500/40 transition flex items-center gap-2">
-                        <i class="fa-solid fa-power-off text-purple-400"></i> Pause / Resume 24/7 AI
-                    </button>
-                    <button onclick="adminLiquidateAll()" class="px-3 py-1.5 rounded-xl bg-rose-950 hover:bg-rose-900 text-rose-300 text-xs font-bold border border-rose-500/40 transition flex items-center gap-2">
-                        <i class="fa-solid fa-triangle-exclamation text-rose-400"></i> Emergency Liquidate All
-                    </button>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
-                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
-                    <span class="text-slate-400">AI Risk Sensitivity:</span>
-                    <select id="admin-risk-select" onchange="adminSetRiskLevel(this.value)" class="bg-slate-950 border border-slate-700 text-cyan-300 text-xs rounded px-2 py-1">
-                        <option value="CONSERVATIVE">CONSERVATIVE (>88%)</option>
-                        <option value="MODERATE" selected>MODERATE (>82%)</option>
-                        <option value="AGGRESSIVE">AGGRESSIVE (>75%)</option>
-                    </select>
-                </div>
-                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
-                    <span class="text-slate-400">Continuous AI Execution Speed:</span>
-                    <span class="text-emerald-400 font-bold">5 Sec / Cycle</span>
-                </div>
-                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
-                    <span class="text-slate-400">Groq LLM Engine Status:</span>
-                    <span class="text-cyan-400 font-bold">Llama 3.3 70B Versatile</span>
-                </div>
-            </div>
-        </div>
-        {% elif role == 'evaluator' %}
-        <!-- HACKATHON EVALUATOR PANEL -->
-        <div class="glass-card rounded-2xl p-4 border border-purple-500/40 bg-purple-950/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-lg">
+        <!-- HACKATHON EVALUATOR & ROLE PANELS CONTAINER -->
+        <div id="evaluator-panel" class="glass-card rounded-2xl p-4 border border-purple-500/40 bg-purple-950/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-lg">
             <div class="flex items-center gap-3">
                 <div class="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center shrink-0">
                     <i class="fa-solid fa-award text-amber-300 text-base"></i>
@@ -235,7 +187,7 @@
                         <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">VERIFIED</span>
                     </h3>
                     <p class="text-slate-300 text-[11px] font-mono mt-0.5">
-                        Equity locked strictly to live Alpaca API paper trading balance ($100,000.00). Alert pings dispatched to <span class="text-cyan-300 font-bold">founder.hypernovatechnology@gmail.com</span>.
+                        Equity locked strictly to live Alpaca API paper trading balance ($100,000.00). Alert pings dispatched to <span id="banner-alert-email" class="text-cyan-300 font-bold">evaluator.judge@hackathon.org</span>.
                     </p>
                 </div>
             </div>
@@ -243,49 +195,6 @@
                 <i class="fa-solid fa-file-pdf"></i> Export Official Audit PDF
             </a>
         </div>
-        {% elif role == 'beginner' %}
-        <!-- BEGINNER GUIDED AI TUTOR BANNER -->
-        <div class="glass-card rounded-2xl p-4 border border-emerald-500/40 bg-emerald-950/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-lg">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
-                    <i class="fa-solid fa-seedling text-emerald-400 text-base"></i>
-                </div>
-                <div>
-                    <h3 class="font-bold text-white font-mono flex items-center gap-2">
-                        Beginner Guided AI Guarded Workspace
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">CAPITAL PROTECTED</span>
-                    </h3>
-                    <p class="text-slate-300 text-[11px] font-mono mt-0.5">
-                        Automated risk buffers enabled. Ask the Groq AI Tutor any options question in the right drawer!
-                    </p>
-                </div>
-            </div>
-            <button onclick="openUpiDepositModal()" class="px-3.5 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs shadow-md shrink-0 flex items-center gap-2 hover:bg-emerald-400 transition">
-                <i class="fa-solid fa-qrcode"></i> Deposit Funds via UPI Gateway
-            </button>
-        </div>
-        {% elif role == 'advanced' %}
-        <!-- ADVANCED QUANT WORKSTATION BANNER -->
-        <div class="glass-card rounded-2xl p-4 border border-purple-500/40 bg-purple-950/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-lg">
-            <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center shrink-0">
-                    <i class="fa-solid fa-microchip text-purple-400 text-base"></i>
-                </div>
-                <div>
-                    <h3 class="font-bold text-white font-mono flex items-center gap-2">
-                        Advanced Quantitative Options & Crypto Workstation
-                        <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">INSTITUTIONAL RADAR</span>
-                    </h3>
-                    <p class="text-slate-300 text-[11px] font-mono mt-0.5">
-                        Full Greeks matrix, Volatility Skew, and Custom Credit Spread Builder active.
-                    </p>
-                </div>
-            </div>
-            <button onclick="sendQuickPrompt('Generate Python Backtest Script')" class="px-3.5 py-2 rounded-xl bg-purple-900 hover:bg-purple-800 text-purple-200 font-bold text-xs border border-purple-500/40 shrink-0 flex items-center gap-2 transition">
-                <i class="fa-solid fa-code"></i> Open Strategy Code Backtest
-            </button>
-        </div>
-        {% endif %}
 
         <!-- TOP METRICS GRID -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">

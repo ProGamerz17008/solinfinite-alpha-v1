@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Role Selection | SOLINFINITE ALPHA V1</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brandPurple: '#8b5cf6',
+                        hyperCyan: '#06b6d4',
+                        emeraldGlow: '#10b981'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background-color: #080c14;
+            color: #f1f5f9;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        #fluid-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .btn-shimmer {
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #06b6d4 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-shimmer::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(60deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%);
+            transform: rotate(30deg);
+            transition: all 0.6s ease;
+        }
+        .btn-shimmer:hover::after { left: 100%; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center relative p-4">
+    
+    <!-- FLUID DYNAMICS BACKGROUND CANVAS -->
+    <canvas id="fluid-canvas"></canvas>
+
+    <div class="relative z-10 w-full max-w-xl">
+        
+        <div class="glass-card rounded-3xl p-8 space-y-6 text-center border border-purple-500/30 shadow-2xl">
+            
+            <!-- COMPANY LOGO & PLATFORM TITLE -->
+            <div class="flex flex-col items-center gap-3">
+                <div class="w-full max-w-[280px] p-2 rounded-2xl bg-slate-950/80 border border-purple-500/30 shadow-lg shadow-purple-500/20 overflow-hidden flex items-center justify-center">
+                    <img src="/static/hypernova_logo.jpg" alt="HyperNova Technology" class="w-full object-contain max-h-16 rounded-xl">
+                </div>
+
+                <div>
+                    <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 via-purple-300 to-pink-400 bg-clip-text text-transparent font-mono">
+                        SOLINFINITE ALPHA V1
+                    </h1>
+                    <p class="text-xs text-slate-400 font-mono mt-0.5">
+                        Continuous 24/7 Autonomous AI Options & Crypto Platform
+                    </p>
+                </div>
+            </div>
+
+            <!-- TAB SWITCHER -->
+            <div class="grid grid-cols-2 gap-2 p-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs font-semibold">
+                <button id="tab-evaluator" onclick="switchTab('evaluator')" class="py-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md transition">
+                    🏆 Evaluator & Admin Roles
+                </button>
+                <button id="tab-user" onclick="switchTab('user')" class="py-2 rounded-lg text-slate-400 hover:text-white transition">
+                    👤 User Roles (Google Login)
+                </button>
+            </div>
+
+            <!-- EVALUATOR & MASTER ADMIN ROLE FORMS -->
+            <div id="form-evaluator" class="space-y-4 text-left">
+                <div class="p-3.5 rounded-xl bg-purple-950/40 border border-purple-500/30 text-xs text-purple-200 leading-relaxed space-y-1">
+                    <div class="font-bold text-purple-300 flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved text-cyan-400"></i> Evaluator & Master Admin Gateway
+                    </div>
+                    <p class="text-[11px] text-slate-300">
+                        Evaluator mode is strictly locked to live Alpaca Paper Trading equity ($100,000.00). Provide your email below to receive live trade alert pings!
+                    </p>
+                </div>
+
+                <!-- EVALUATOR LOGIN WITH CUSTOM PING EMAIL -->
+                <form action="/login" method="POST" class="space-y-2.5">
+                    <input type="hidden" name="username" value="admin">
+                    <input type="hidden" name="password" value="alpaca2026">
+                    <div>
+                        <label class="block text-[10px] font-semibold text-slate-400 font-mono">EVALUATOR ALERT PING EMAIL</label>
+                        <input type="email" name="email" value="evaluator.judge@hackathon.org" required
+                               placeholder="evaluator@company.com"
+                               class="w-full bg-slate-900/90 border border-purple-500/40 rounded-xl px-3.5 py-2 text-xs text-cyan-300 placeholder-slate-500 focus:outline-none focus:border-purple-400 transition font-mono">
+                    </div>
+                    <button type="submit" class="btn-shimmer w-full py-3.5 rounded-xl text-white text-xs font-bold tracking-wide shadow-lg shadow-purple-600/40 transition transform active:scale-95 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-award text-amber-300"></i>
+                        <span>1-CLICK EVALUATOR LOGIN ($100K ALPACA PAPER)</span>
+                    </button>
+                </form>
+
+                <!-- MASTER ADMIN LOGIN (founder.hypernovatechnology@gmail.com STRICTLY RESERVED) -->
+                <div class="pt-2 border-t border-slate-800">
+                    <form action="/login" method="POST" class="space-y-2">
+                        <input type="hidden" name="username" value="masteradmin">
+                        <input type="hidden" name="password" value="admin2026">
+                        <input type="hidden" name="email" value="founder.hypernovatechnology@gmail.com">
+                        <button type="submit" class="w-full py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-300 text-xs font-bold border border-cyan-500/40 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-sliders text-cyan-400"></i>
+                            <span>MASTER ADMIN (founder.hypernovatechnology@gmail.com)</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- BEGINNER & ADVANCED USER ROLE FORMS WITH REAL GOOGLE LOGIN -->
+            <div id="form-user" class="hidden space-y-4 text-left">
+                
+                <div class="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs text-slate-300 space-y-2">
+                    <div class="font-bold text-white flex items-center gap-2">
+                        <i class="fa-brands fa-google text-rose-400"></i> Google Account Sign-In
+                    </div>
+                    <p class="text-[11px] text-slate-400">
+                        Sign in with Google as a Beginner or Advanced Quant Trader to receive automated trade alert pings directly on your Gmail mailbox!
+                    </p>
+                    
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <!-- GOOGLE LOGIN FOR BEGINNER -->
+                        <form action="/login" method="POST">
+                            <input type="hidden" name="username" value="beginner_user">
+                            <input type="hidden" name="password" value="pass">
+                            <input type="hidden" name="email" value="beginner.trader@gmail.com">
+                            <button type="submit" class="w-full py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 text-white text-xs font-bold border border-emerald-500/40 transition flex items-center justify-center gap-2">
+                                <i class="fa-brands fa-google text-emerald-400"></i>
+                                <span>Beginner (Google)</span>
+                            </button>
+                        </form>
+
+                        <!-- GOOGLE LOGIN FOR ADVANCED -->
+                        <form action="/login" method="POST">
+                            <input type="hidden" name="username" value="pro_quant">
+                            <input type="hidden" name="password" value="pass">
+                            <input type="hidden" name="email" value="pro.quant@gmail.com">
+                            <button type="submit" class="w-full py-2.5 rounded-xl bg-slate-950 hover:bg-slate-900 text-white text-xs font-bold border border-purple-500/40 transition flex items-center justify-center gap-2">
+                                <i class="fa-brands fa-google text-purple-400"></i>
+                                <span>Advanced (Google)</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="pt-2 border-t border-slate-800 space-y-2.5">
+                    <form action="/login" method="POST" class="space-y-2.5">
+                        <div>
+                            <label class="block text-[10px] font-semibold text-slate-400 font-mono">CUSTOM USER ACCOUNT & PING EMAIL</label>
+                            <input type="text" name="username" placeholder="Username" required
+                                   class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition font-mono mb-2">
+                            <input type="email" name="email" placeholder="your.email@gmail.com" required
+                                   class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-cyan-300 placeholder-slate-500 focus:outline-none focus:border-purple-500 transition font-mono mb-2">
+                            <input type="password" name="password" placeholder="Password" required
+                                   class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition font-mono">
+                        </div>
+                        <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white text-xs font-bold transition">
+                            LOG IN TO CUSTOM USER ACCOUNT
+                        </button>
+                    </form>
+
+                    <div class="mt-2 text-center">
+                        <button onclick="openQuestionnaireModal()" class="w-full py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-cyan-400 text-xs font-semibold border border-cyan-500/30 transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-clipboard-question text-cyan-400"></i>
+                            <span>Take Trader Skill Questionnaire</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-[10px] text-slate-500 font-mono">
+                SOLINFINITE ALPHA V1 &bull; Powered by HyperNova Technology
+            </p>
+
+        </div>
+
+    </div>
+
+    <!-- QUESTIONNAIRE ASSESSMENT MODAL -->
+    <div id="questionnaire-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4">
+        <div class="glass-card rounded-3xl p-6 w-full max-w-lg space-y-5 border border-purple-500/40 text-left shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-graduation-cap text-purple-400 text-lg"></i>
+                    <h3 class="text-base font-bold text-white">Trader Skill Assessment</h3>
+                </div>
+                <button onclick="closeQuestionnaireModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form id="quest-form" onsubmit="submitQuestionnaire(event)" class="space-y-4 text-xs text-slate-200">
+                <div>
+                    <label class="font-bold text-purple-300 block mb-1">1. What is Options Delta?</label>
+                    <select id="q1" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-xs">
+                        <option value="0">I don't know yet (Beginner)</option>
+                        <option value="1">Rate of change of option price per $1 underlying move (Advanced)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="font-bold text-purple-300 block mb-1">2. Have you traded Credit Spreads or Crypto Futures before?</label>
+                    <select id="q2" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-xs">
+                        <option value="0">No, I am new to options and crypto (Beginner)</option>
+                        <option value="1">Yes, I have active trading experience (Advanced)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="font-bold text-purple-300 block mb-1">3. How do you handle market downside risk?</label>
+                    <select id="q3" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 font-mono text-xs">
+                        <option value="0">Let AI manage position risk automatically (Beginner)</option>
+                        <option value="1">Use stop-loss and delta hedging (Advanced)</option>
+                    </select>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="btn-shimmer w-full py-3 rounded-xl text-white font-bold text-xs shadow-lg">
+                        SUBMIT ASSESSMENT & START TRADING
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // HIGH-PERFORMANCE TACTILE NAVIER-STOKES FLUID SIMULATION
+        class TactileFluidSimulation {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                if(!this.canvas) return;
+                this.ctx = this.canvas.getContext('2d');
+                this.resize();
+
+                this.particles = [];
+                this.splats = [];
+                this.mouse = { x: this.width/2, y: this.height/2, px: this.width/2, py: this.height/2, vx: 0, vy: 0, speed: 0 };
+                
+                // Brand Palette: Electric Cyan, Deep Violet, Emerald Glow, Neon Pink
+                this.colors = [
+                    { r: 6, g: 182, b: 212 },
+                    { r: 139, g: 92, b: 246 },
+                    { r: 16, g: 185, b: 129 },
+                    { r: 236, g: 72, b: 153 }
+                ];
+
+                this.init();
+                this.bindEvents();
+                this.render();
+            }
+
+            resize() {
+                this.width = this.canvas.width = window.innerWidth;
+                this.height = this.canvas.height = window.innerHeight;
+            }
+
+            init() {
+                for(let i = 0; i < 60; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.width,
+                        y: Math.random() * this.height,
+                        vx: (Math.random() - 0.5) * 0.6,
+                        vy: (Math.random() - 0.5) * 0.6,
+                        radius: Math.random() * 50 + 20,
+                        color: this.colors[Math.floor(Math.random() * this.colors.length)],
+                        alpha: Math.random() * 0.12 + 0.04
+                    });
+                }
+            }
+
+            bindEvents() {
+                window.addEventListener('resize', () => this.resize());
+                
+                const trackCursor = (x, y) => {
+                    this.mouse.vx = (x - this.mouse.px) * 0.8;
+                    this.mouse.vy = (y - this.mouse.py) * 0.8;
+                    this.mouse.speed = Math.sqrt(this.mouse.vx * this.mouse.vx + this.mouse.vy * this.mouse.vy);
+                    this.mouse.px = this.mouse.x;
+                    this.mouse.py = this.mouse.y;
+                    this.mouse.x = x;
+                    this.mouse.y = y;
+
+                    if (this.mouse.speed > 0.4) {
+                        this.spawnSplat(this.mouse.x, this.mouse.y, this.mouse.vx, this.mouse.vy, this.mouse.speed);
+                    }
+                };
+
+                window.addEventListener('mousemove', (e) => trackCursor(e.clientX, e.clientY));
+                window.addEventListener('touchmove', (e) => {
+                    if(e.touches.length > 0) trackCursor(e.touches[0].clientX, e.touches[0].clientY);
+                });
+            }
+
+            spawnSplat(x, y, vx, vy, speed) {
+                const count = Math.min(Math.floor(speed * 1.8) + 2, 14);
+                const col = this.colors[Math.floor(Math.random() * this.colors.length)];
+
+                for(let i = 0; i < count; i++) {
+                    const angle = Math.atan2(vy, vx) + (Math.random() - 0.5) * 0.9;
+                    const force = speed * (0.3 + Math.random() * 0.7);
+                    
+                    this.splats.push({
+                        x: x,
+                        y: y,
+                        vx: Math.cos(angle) * force + (Math.random() - 0.5) * 1.5,
+                        vy: Math.sin(angle) * force + (Math.random() - 0.5) * 1.5,
+                        radius: Math.min(speed * 3.8 + Math.random() * 12, 70),
+                        alpha: 0.7,
+                        color: col,
+                        life: 1.0,
+                        decay: 0.012 + Math.random() * 0.01
+                    });
+                }
+            }
+
+            render() {
+                this.ctx.fillStyle = 'rgba(8, 12, 20, 0.25)';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+
+                for(let p of this.particles) {
+                    let dx = p.x - this.mouse.x;
+                    let dy = p.y - this.mouse.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 200) {
+                        let force = (200 - dist) / 200;
+                        p.vx += (dx / dist) * force * 0.7;
+                        p.vy += (dy / dist) * force * 0.7;
+                    }
+
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vx *= 0.96;
+                    p.vy *= 0.96;
+
+                    if (p.x < 0) p.x = this.width;
+                    if (p.x > this.width) p.x = 0;
+                    if (p.y < 0) p.y = this.height;
+                    if (p.y > this.height) p.y = 0;
+
+                    const grad = this.ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
+                    grad.addColorStop(0, `rgba(${p.color.r}, ${p.color.g}, ${p.color.b}, ${p.alpha})`);
+                    grad.addColorStop(1, 'transparent');
+
+                    this.ctx.fillStyle = grad;
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+
+                for(let i = this.splats.length - 1; i >= 0; i--) {
+                    let s = this.splats[i];
+                    s.x += s.vx;
+                    s.y += s.vy;
+                    s.vx *= 0.94;
+                    s.vy *= 0.94;
+                    s.life -= s.decay;
+
+                    if (s.life <= 0) {
+                        this.splats.splice(i, 1);
+                        continue;
+                    }
+
+                    const grad = this.ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.radius * s.life);
+                    grad.addColorStop(0, `rgba(${s.color.r}, ${s.color.g}, ${s.color.b}, ${s.alpha * s.life})`);
+                    grad.addColorStop(0.5, `rgba(${s.color.r}, ${s.color.g}, ${s.color.b}, ${s.alpha * s.life * 0.3})`);
+                    grad.addColorStop(1, 'transparent');
+
+                    this.ctx.globalCompositeOperation = 'lighter';
+                    this.ctx.fillStyle = grad;
+                    this.ctx.beginPath();
+                    this.ctx.arc(s.x, s.y, s.radius * s.life, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    this.ctx.globalCompositeOperation = 'source-over';
+                }
+
+                requestAnimationFrame(() => this.render());
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            new TactileFluidSimulation('fluid-canvas');
+        });
+
+        function switchTab(tab) {
+            if(tab === 'evaluator') {
+                document.getElementById('form-evaluator').classList.remove('hidden');
+                document.getElementById('form-user').classList.add('hidden');
+                document.getElementById('tab-evaluator').className = 'py-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md transition';
+                document.getElementById('tab-user').className = 'py-2 rounded-lg text-slate-400 hover:text-white transition';
+            } else {
+                document.getElementById('form-user').classList.remove('hidden');
+                document.getElementById('form-evaluator').classList.add('hidden');
+                document.getElementById('tab-user').className = 'py-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md transition';
+                document.getElementById('tab-evaluator').className = 'py-2 rounded-lg text-slate-400 hover:text-white transition';
+            }
+        }
+
+        function openQuestionnaireModal() { document.getElementById('questionnaire-modal').classList.remove('hidden'); }
+        function closeQuestionnaireModal() { document.getElementById('questionnaire-modal').classList.add('hidden'); }
+
+        async function submitQuestionnaire(e) {
+            e.preventDefault();
+            const score = parseInt(document.getElementById('q1').value) + parseInt(document.getElementById('q2').value) + parseInt(document.getElementById('q3').value);
+            try {
+                const res = await fetch('/api/questionnaire', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ score: score })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert(data.message);
+                    window.location.href = '/';
+                }
+            } catch(err) { console.error(err); }
+        }
+    </script>
+</body>
+</html>
