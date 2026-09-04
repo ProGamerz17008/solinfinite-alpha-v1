@@ -1,0 +1,2715 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOLINFINITE ALPHA V1 | Autonomous AI Trading Platform</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brandPurple: '#8b5cf6',
+                        brandPink: '#ec4899',
+                        hyperCyan: '#06b6d4',
+                        emeraldGlow: '#10b981'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- TradingView Widget JS & EmailJS SDK -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+    <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+
+
+    <style>
+        :root {
+            --bg-color: #080c14;
+            --card-bg: rgba(15, 23, 42, 0.6);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --text-primary: #f1f5f9;
+        }
+        .light {
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-border: rgba(148, 163, 184, 0.3);
+            --text-primary: #0f172a;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            transition: background-color 0.4s ease;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+            transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        .glass-card:hover {
+            border-color: rgba(139, 92, 246, 0.4);
+            box-shadow: 0 25px 60px rgba(139, 92, 246, 0.15);
+        }
+
+        #fluid-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+        ::-webkit-scrollbar-thumb { background: rgba(139, 92, 246, 0.5); border-radius: 3px; }
+
+        .btn-shimmer {
+            background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 50%, #06b6d4 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-shimmer::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(60deg, transparent 30%, rgba(255,255,255,0.2) 50%, transparent 70%);
+            transform: rotate(30deg);
+            transition: all 0.6s ease;
+        }
+        .btn-shimmer:hover::after { left: 100%; }
+    </style>
+</head>
+<body class="min-h-screen relative antialiased selection:bg-purple-500 selection:text-white">
+    
+    <!-- AUTHENTIC NAVIER-STOKES FLUID DYNAMICS CANVAS -->
+    <canvas id="fluid-canvas"></canvas>
+
+    <div class="relative z-10 max-w-[1650px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- HEADER BAR WITH OFFICIAL LOGO & SOLINFINITE ALPHA V1 BRANDING -->
+        <header class="glass-card rounded-2xl p-5 flex flex-col lg:flex-row items-center justify-between gap-4 border">
+            <div class="flex items-center gap-4">
+                
+                <!-- OFFICIAL LOGO & ALPACA INDICATOR -->
+                <div class="flex items-center gap-3">
+                    <div class="max-w-[200px] h-12 px-3 py-1 rounded-xl bg-slate-950/90 border border-purple-500/30 flex items-center justify-center overflow-hidden">
+                        <img src="/static/hypernova_logo.jpg" alt="HyperNova Technology Logo" class="h-full object-contain">
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center" title="Alpaca Trading Gateway">
+                        <i class="fa-solid fa-chart-line text-cyan-400 text-lg"></i>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex items-center gap-2.5">
+                        <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 via-purple-200 to-pink-400 bg-clip-text text-transparent font-mono">
+                            SOLINFINITE ALPHA V1
+                        </h1>
+                        <span id="role-badge" class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono">
+                            {{ role.upper() if role else 'EVALUATOR' }} MODE
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-400 font-mono mt-0.5">
+                        Continuous 24/7 AI Trader &bull; Alert Mail: <span id="header-alert-email" onclick="promptUpdateAlertEmail()" class="text-cyan-400 font-semibold cursor-pointer hover:underline" title="Click to edit alert email">{{ alert_email }}</span>
+                        <button onclick="promptUpdateAlertEmail()" class="ml-1 text-[10px] text-purple-400 hover:text-purple-300" title="Change Alert Email"><i class="fa-solid fa-pen-to-square"></i></button>
+                    </p>
+                </div>
+            </div>
+
+            <!-- CONTROLS & ACTION BUTTONS -->
+            <div class="flex flex-wrap items-center gap-3">
+                
+                <button onclick="toggleTheme()" class="px-3 py-2 rounded-xl bg-slate-900/80 border border-slate-700 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-2 transition">
+                    <i id="theme-icon" class="fa-solid fa-moon text-purple-400"></i>
+                    <span id="theme-text">Dark Mode</span>
+                </button>
+
+                <button onclick="openAlpacaKeysModal()" class="px-3.5 py-2 rounded-xl bg-amber-950/60 hover:bg-amber-900 text-amber-300 text-xs font-semibold flex items-center gap-2 border border-amber-500/40 transition">
+                    <i class="fa-solid fa-key text-amber-400"></i> Alpaca Paper Keys
+                </button>
+
+                <button onclick="promptUpdateTradeLimit()" class="px-3.5 py-2 rounded-xl bg-cyan-950/60 hover:bg-cyan-900 text-cyan-300 text-xs font-semibold flex items-center gap-2 border border-cyan-500/40 transition">
+                    <i class="fa-solid fa-sliders text-cyan-400"></i> Trade Limit (<span id="header-trade-limit">$5,000</span>)
+                </button>
+
+                <button id="btn-upi-deposit" onclick="openUpiDepositModal()" class="px-3.5 py-2 rounded-xl bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 text-xs font-bold flex items-center gap-2 border border-emerald-500/40 transition shadow-md">
+                    <i class="fa-solid fa-qrcode text-emerald-400"></i> Deposit / Paper Money Top-Up
+                </button>
+
+                <button onclick="openDailyReportModal()" class="px-3.5 py-2 rounded-xl bg-purple-950/60 hover:bg-purple-900 text-purple-300 text-xs font-semibold flex items-center gap-2 border border-purple-500/40 transition">
+                    <i class="fa-solid fa-file-invoice text-purple-400"></i> Daily Report PDF
+                </button>
+
+                <button id="btn-run-agent" onclick="runAnalysisAndTrade()" class="btn-shimmer px-5 py-2 rounded-xl text-white text-xs font-bold flex items-center gap-2 shadow-lg shadow-purple-600/30 transition transform active:scale-95">
+                    <i class="fa-solid fa-wand-magic-sparkles text-amber-300"></i> Trigger Gemini AI
+                </button>
+
+                <a href="/logout" class="px-3 py-2 rounded-xl bg-slate-900 hover:bg-rose-950/60 text-slate-400 hover:text-rose-300 text-xs font-semibold border border-slate-800 transition" title="Log Out">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </a>
+            </div>
+        </header>
+
+        <!-- ROLE SPECIFIC DYNAMIC DASHBOARD BANNERS & CONTROLS -->
+        {% if role == 'admin_master' %}
+        <!-- MASTER ADMIN SYSTEM CONTROL PANEL -->
+        <div class="glass-card rounded-2xl p-5 border border-cyan-500/40 bg-slate-950/80 space-y-3 shadow-xl">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center">
+                        <i class="fa-solid fa-sliders text-cyan-400 text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-bold text-white font-mono flex items-center gap-2">
+                            Master Admin Control Center & System Oversight
+                            <span id="ai-status-indicator" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">24/7 AI ACTIVE</span>
+                        </h2>
+                        <p class="text-xs text-slate-400 font-mono">Real-time Thread Controls, Risk Management & Emergency Overrides</p>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                    <button id="btn-toggle-ai-loop" onclick="adminToggleAiLoop()" class="px-3 py-1.5 rounded-xl bg-purple-950 hover:bg-purple-900 text-purple-300 text-xs font-bold border border-purple-500/40 transition flex items-center gap-2">
+                        <i class="fa-solid fa-power-off text-purple-400"></i> Pause / Resume 24/7 AI
+                    </button>
+                    <button onclick="adminLiquidateAll()" class="px-3 py-1.5 rounded-xl bg-rose-950 hover:bg-rose-900 text-rose-300 text-xs font-bold border border-rose-500/40 transition flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-rose-400"></i> Emergency Liquidate All
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
+                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                    <span class="text-slate-400">AI Risk Sensitivity:</span>
+                    <select id="admin-risk-select" onchange="adminSetRiskLevel(this.value)" class="bg-slate-950 border border-slate-700 text-cyan-300 text-xs rounded px-2 py-1">
+                        <option value="CONSERVATIVE">CONSERVATIVE (>88%)</option>
+                        <option value="MODERATE" selected>MODERATE (>82%)</option>
+                        <option value="AGGRESSIVE">AGGRESSIVE (>75%)</option>
+                    </select>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                    <span class="text-slate-400">Continuous AI Execution Speed:</span>
+                    <span class="text-emerald-400 font-bold">5 Sec / Cycle</span>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between">
+                    <span class="text-slate-400">Groq LLM Engine Status:</span>
+                    <span class="text-cyan-400 font-bold">Llama 3.3 70B Versatile</span>
+                </div>
+            </div>
+        </div>
+        {% elif role == 'evaluator' %}
+        <!-- HACKATHON EVALUATOR PANEL -->
+        <div class="glass-card rounded-2xl p-4 border border-purple-500/40 bg-purple-950/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-lg">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-award text-amber-300 text-base"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-white font-mono flex items-center gap-2">
+                        Official Hackathon Evaluator Account
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">VERIFIED</span>
+                    </h3>
+                    <p class="text-slate-300 text-[11px] font-mono mt-0.5">
+                        Equity locked strictly to live Alpaca API paper trading balance ($100,000.00). Alert pings dispatched to <span class="text-cyan-300 font-bold">founder.hypernovatechnology@gmail.com</span>.
+                    </p>
+                </div>
+            </div>
+            <a href="/api/download-report-pdf" target="_blank" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold text-xs shadow-md shrink-0 flex items-center gap-2">
+                <i class="fa-solid fa-file-pdf"></i> Export Official Audit PDF
+            </a>
+        </div>
+        {% elif role == 'beginner' %}
+        <!-- BEGINNER GUIDED AI TUTOR BANNER -->
+        <div class="glass-card rounded-2xl p-4 border border-emerald-500/40 bg-emerald-950/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-lg">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-seedling text-emerald-400 text-base"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-white font-mono flex items-center gap-2">
+                        Beginner Guided AI Guarded Workspace
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">CAPITAL PROTECTED</span>
+                    </h3>
+                    <p class="text-slate-300 text-[11px] font-mono mt-0.5">
+                        Automated risk buffers enabled. Ask the Groq AI Tutor any options question in the right drawer!
+                    </p>
+                </div>
+            </div>
+            <button onclick="openUpiDepositModal()" class="px-3.5 py-2 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs shadow-md shrink-0 flex items-center gap-2 hover:bg-emerald-400 transition">
+                <i class="fa-solid fa-qrcode"></i> Deposit Funds via UPI Gateway
+            </button>
+        </div>
+        {% elif role == 'advanced' %}
+        <!-- ADVANCED QUANT WORKSTATION BANNER -->
+        <div class="glass-card rounded-2xl p-4 border border-purple-500/40 bg-purple-950/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-lg">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center shrink-0">
+                    <i class="fa-solid fa-microchip text-purple-400 text-base"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-white font-mono flex items-center gap-2">
+                        Advanced Quantitative Options & Crypto Workstation
+                        <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">INSTITUTIONAL RADAR</span>
+                    </h3>
+                    <p class="text-slate-300 text-[11px] font-mono mt-0.5">
+                        Full Greeks matrix, Volatility Skew, and Custom Credit Spread Builder active.
+                    </p>
+                </div>
+            </div>
+            <button onclick="sendQuickPrompt('Generate Python Backtest Script')" class="px-3.5 py-2 rounded-xl bg-purple-900 hover:bg-purple-800 text-purple-200 font-bold text-xs border border-purple-500/40 shrink-0 flex items-center gap-2 transition">
+                <i class="fa-solid fa-code"></i> Open Strategy Code Backtest
+            </button>
+        </div>
+        {% endif %}
+
+        <!-- TOP METRICS GRID -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            
+            <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
+                <div class="flex items-center justify-between text-slate-400 text-xs font-semibold mb-2">
+                    <span>ALPACA PAPER PORTFOLIO EQUITY</span>
+                    <i class="fa-solid fa-wallet text-purple-400 text-sm"></i>
+                </div>
+                <div id="metric-equity" class="text-2xl lg:text-3xl font-extrabold font-mono text-white tracking-tight">
+                    $100,000.00
+                </div>
+                <div class="mt-2 flex items-center justify-between text-xs font-medium">
+                    <span id="equity-status-text" class="text-emerald-400 flex items-center gap-1"><i class="fa-solid fa-lock"></i> Alpaca API Account Locked</span>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
+                <div class="flex items-center justify-between text-slate-400 text-xs font-semibold mb-2">
+                    <span>LIQUID CASH AVAILABLE</span>
+                    <i class="fa-solid fa-money-bill-wave text-cyan-400 text-sm"></i>
+                </div>
+                <div id="metric-cash" class="text-2xl lg:text-3xl font-extrabold font-mono text-white tracking-tight">
+                    $100,000.00
+                </div>
+                <div class="mt-2 flex items-center gap-2 text-xs font-medium text-slate-400 font-mono">
+                    <span>Options & Crypto Liquidity</span>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
+                <div class="flex items-center justify-between text-slate-400 text-xs font-semibold mb-2">
+                    <span>24/7 PREDICTIVE AI WIN RATE</span>
+                    <i class="fa-solid fa-bullseye text-emerald-400 text-sm"></i>
+                </div>
+                <div id="metric-winrate" class="text-2xl lg:text-3xl font-extrabold font-mono text-emerald-400 tracking-tight">
+                    91.67%
+                </div>
+                <div class="mt-2 flex items-center gap-2 text-xs font-medium text-purple-300 font-mono">
+                    <i class="fa-solid fa-brain"></i> Continuous AI Learning Active
+                </div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-5 relative overflow-hidden border border-emerald-500/30">
+                <div class="flex items-center justify-between text-slate-400 text-xs font-semibold mb-2">
+                    <span>AGENT CONFIDENCE SCORE</span>
+                    <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">AUTO-EXECUTE >80%</span>
+                </div>
+                <div class="flex items-baseline gap-2">
+                    <div id="metric-confidence" class="text-2xl lg:text-3xl font-extrabold font-mono text-emerald-400 tracking-tight">
+                        92.4%
+                    </div>
+                    <span id="metric-confidence-badge" class="text-xs font-semibold text-emerald-400">HIGH PROBABILITY</span>
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-2 mt-3 overflow-hidden">
+                    <div id="confidence-progress-bar" class="bg-gradient-to-r from-purple-400 to-emerald-400 h-2 rounded-full transition-all duration-700" style="width: 92.4%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT AREA (2-COLUMN GRID) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- LEFT COLUMN: LIVE CHART & QUANT RADAR (8 COLS) -->
+            <div class="lg:col-span-7 xl:col-span-8 space-y-6">
+
+                <!-- LIVE TECHNICAL FINANCIAL CHART & DEMO TRADE SIMULATION BUTTONS -->
+                <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-3 mb-4 gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+                                <i class="fa-solid fa-chart-candlestick text-purple-400"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-white flex items-center gap-2">
+                                    Institutional Technical Chart
+                                    <span id="chart-symbol-badge" class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-xs font-mono">SPY</span>
+                                </h2>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <p class="text-xs text-slate-400 font-mono">24/7 Predictive Chart & Trend Radar</p>
+                                    
+                                    <!-- MULTI-CHART VIEW SWITCHER TOGGLE -->
+                                    <div class="inline-flex rounded-lg bg-slate-900 p-0.5 border border-slate-700 font-mono text-[11px] ml-2">
+                                        <button id="view-single-btn" onclick="switchChartView('single')" class="px-2 py-0.5 rounded-md bg-purple-600 text-white font-bold transition flex items-center gap-1">
+                                            <i class="fa-solid fa-square text-[10px]"></i> Single View
+                                        </button>
+                                        <button id="view-multi-btn" onclick="switchChartView('multi')" class="px-2 py-0.5 rounded-md text-slate-400 hover:text-white transition flex items-center gap-1">
+                                            <i class="fa-solid fa-border-all text-[10px]"></i> Multi-Chart Grid (4x)
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Asset Dropdown, Search Box & Copy to Chatbot Buttons -->
+                        <div class="flex flex-wrap items-center gap-2">
+                            <div class="flex items-center gap-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1">
+                                <i class="fa-solid fa-magnifying-glass text-cyan-400 text-xs"></i>
+                                <input type="text" id="custom-stock-input" placeholder="Search stock..." 
+                                       onkeypress="if(event.key==='Enter') searchCustomStock()"
+                                       class="w-24 bg-transparent text-cyan-300 font-bold text-xs focus:outline-none font-mono placeholder-slate-500">
+                                <button onclick="searchCustomStock()" class="text-slate-400 hover:text-white text-xs px-1">
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                            </div>
+
+                            <select id="asset-select" onchange="changeAssetSymbol(this.value)" class="bg-slate-900 border border-slate-700 text-cyan-300 font-bold text-xs rounded-lg px-2.5 py-1.5 focus:outline-none cursor-pointer font-mono">
+                                <option value="SPY">SPY (S&P 500 Options)</option>
+                                <option value="QQQ">QQQ (Nasdaq Options)</option>
+                                <option value="IWM">IWM (Russell Options)</option>
+                                <option value="BTC">BTC/USD (Bitcoin Crypto)</option>
+                                <option value="ETH">ETH/USD (Ethereum Crypto)</option>
+                                <option value="SOL">SOL/USD (Solana Crypto)</option>
+                                <option value="NVDA">NVDA (NVIDIA Stock)</option>
+                                <option value="AAPL">AAPL (Apple Stock)</option>
+                                <option value="TSLA">TSLA (Tesla Stock)</option>
+                                <option value="MSFT">MSFT (Microsoft Stock)</option>
+                                <option value="AMZN">AMZN (Amazon Stock)</option>
+                                <option value="AMD">AMD (AMD Stock)</option>
+                                <option value="GOOGL">GOOGL (Alphabet Stock)</option>
+                                <option value="META">META (Meta Stock)</option>
+                            </select>
+
+                            <button onclick="copyStockToChatbot()" class="px-2.5 py-1.5 rounded-lg bg-purple-900 hover:bg-purple-800 text-purple-200 text-xs font-bold border border-purple-500/40 transition flex items-center gap-1.5" title="Copy Stock Ticker & Ask AI Chatbot">
+                                <i class="fa-solid fa-copy"></i> 📋 Ask AI
+                            </button>
+
+                            <button onclick="demoChartTrade('BUY')" class="px-2.5 py-1.5 rounded-lg bg-emerald-950 hover:bg-emerald-900 text-emerald-300 text-xs font-bold border border-emerald-500/40 transition">
+                                🚀 Demo Buy
+                            </button>
+                            <button onclick="demoChartTrade('SELL')" class="px-2.5 py-1.5 rounded-lg bg-rose-950 hover:bg-rose-900 text-rose-300 text-xs font-bold border border-rose-500/40 transition">
+                                📉 Reversal Sell
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- SINGLE CHART CONTAINER -->
+                    <div id="single_chart_wrapper" class="w-full h-[410px] rounded-xl overflow-hidden border border-slate-800 bg-slate-950">
+                        <div id="tradingview_chart" class="w-full h-full"></div>
+                    </div>
+
+                    <!-- MULTI-CHART GRID CONTAINER (4 CHARTS SIDE-BY-SIDE) -->
+                    <div id="multichart_grid_container" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4 w-full mt-2">
+                        <!-- CHART 1 -->
+                        <div class="glass-card rounded-xl p-3 border border-slate-800 bg-slate-950">
+                            <div class="flex items-center justify-between pb-2 border-b border-slate-800 font-mono text-xs">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    <select onchange="updateMultiChart(0, this.value)" class="bg-slate-900 border border-slate-700 text-emerald-300 font-bold px-2 py-0.5 rounded cursor-pointer">
+                                        <option value="SPY" selected>SPY (S&P 500)</option>
+                                        <option value="QQQ">QQQ (Nasdaq)</option>
+                                        <option value="NVDA">NVDA (NVIDIA)</option>
+                                        <option value="BTC">BTC/USD (Crypto)</option>
+                                        <option value="AAPL">AAPL (Apple)</option>
+                                        <option value="TSLA">TSLA (Tesla)</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="demoChartTradeForSymbol(multiChartSymbols[0], 'BUY')" class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-bold text-[10px] border border-emerald-500/30 hover:bg-emerald-900 transition">🚀 Buy</button>
+                                    <button onclick="copyStockToChatbotForSymbol(multiChartSymbols[0])" class="px-2 py-0.5 rounded bg-purple-950 text-purple-300 font-bold text-[10px] border border-purple-500/30 hover:bg-purple-900 transition">📋 Ask AI</button>
+                                </div>
+                            </div>
+                            <div id="tv_multi_chart_0" class="w-full h-[260px] mt-2 rounded overflow-hidden"></div>
+                        </div>
+
+                        <!-- CHART 2 -->
+                        <div class="glass-card rounded-xl p-3 border border-slate-800 bg-slate-950">
+                            <div class="flex items-center justify-between pb-2 border-b border-slate-800 font-mono text-xs">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                                    <select onchange="updateMultiChart(1, this.value)" class="bg-slate-900 border border-slate-700 text-cyan-300 font-bold px-2 py-0.5 rounded cursor-pointer">
+                                        <option value="SPY">SPY (S&P 500)</option>
+                                        <option value="NVDA" selected>NVDA (NVIDIA)</option>
+                                        <option value="QQQ">QQQ (Nasdaq)</option>
+                                        <option value="BTC">BTC/USD (Crypto)</option>
+                                        <option value="AAPL">AAPL (Apple)</option>
+                                        <option value="TSLA">TSLA (Tesla)</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="demoChartTradeForSymbol(multiChartSymbols[1], 'BUY')" class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-bold text-[10px] border border-emerald-500/30 hover:bg-emerald-900 transition">🚀 Buy</button>
+                                    <button onclick="copyStockToChatbotForSymbol(multiChartSymbols[1])" class="px-2 py-0.5 rounded bg-purple-950 text-purple-300 font-bold text-[10px] border border-purple-500/30 hover:bg-purple-900 transition">📋 Ask AI</button>
+                                </div>
+                            </div>
+                            <div id="tv_multi_chart_1" class="w-full h-[260px] mt-2 rounded overflow-hidden"></div>
+                        </div>
+
+                        <!-- CHART 3 -->
+                        <div class="glass-card rounded-xl p-3 border border-slate-800 bg-slate-950">
+                            <div class="flex items-center justify-between pb-2 border-b border-slate-800 font-mono text-xs">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                                    <select onchange="updateMultiChart(2, this.value)" class="bg-slate-900 border border-slate-700 text-amber-300 font-bold px-2 py-0.5 rounded cursor-pointer">
+                                        <option value="SPY">SPY (S&P 500)</option>
+                                        <option value="NVDA">NVDA (NVIDIA)</option>
+                                        <option value="BTC" selected>BTC/USD (Crypto)</option>
+                                        <option value="ETH">ETH/USD (Crypto)</option>
+                                        <option value="AAPL">AAPL (Apple)</option>
+                                        <option value="TSLA">TSLA (Tesla)</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="demoChartTradeForSymbol(multiChartSymbols[2], 'BUY')" class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-bold text-[10px] border border-emerald-500/30 hover:bg-emerald-900 transition">🚀 Buy</button>
+                                    <button onclick="copyStockToChatbotForSymbol(multiChartSymbols[2])" class="px-2 py-0.5 rounded bg-purple-950 text-purple-300 font-bold text-[10px] border border-purple-500/30 hover:bg-purple-900 transition">📋 Ask AI</button>
+                                </div>
+                            </div>
+                            <div id="tv_multi_chart_2" class="w-full h-[260px] mt-2 rounded overflow-hidden"></div>
+                        </div>
+
+                        <!-- CHART 4 -->
+                        <div class="glass-card rounded-xl p-3 border border-slate-800 bg-slate-950">
+                            <div class="flex items-center justify-between pb-2 border-b border-slate-800 font-mono text-xs">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
+                                    <select onchange="updateMultiChart(3, this.value)" class="bg-slate-900 border border-slate-700 text-purple-300 font-bold px-2 py-0.5 rounded cursor-pointer">
+                                        <option value="SPY">SPY (S&P 500)</option>
+                                        <option value="NVDA">NVDA (NVIDIA)</option>
+                                        <option value="BTC">BTC/USD (Crypto)</option>
+                                        <option value="AAPL" selected>AAPL (Apple)</option>
+                                        <option value="TSLA">TSLA (Tesla)</option>
+                                        <option value="AMZN">AMZN (Amazon)</option>
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <button onclick="demoChartTradeForSymbol(multiChartSymbols[3], 'BUY')" class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-bold text-[10px] border border-emerald-500/30 hover:bg-emerald-900 transition">🚀 Buy</button>
+                                    <button onclick="copyStockToChatbotForSymbol(multiChartSymbols[3])" class="px-2 py-0.5 rounded bg-purple-950 text-purple-300 font-bold text-[10px] border border-purple-500/30 hover:bg-purple-900 transition">📋 Ask AI</button>
+                                </div>
+                            </div>
+                            <div id="tv_multi_chart_3" class="w-full h-[260px] mt-2 rounded overflow-hidden"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HYPERNOVA QUANT STRATEGY CORE CARD -->
+                <div class="glass-card rounded-2xl p-6 relative border border-purple-500/40">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-4 mb-4 gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+                                <i class="fa-solid fa-microchip text-purple-400"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-white flex items-center gap-2">
+                                    HyperNova Quant Strategy Core
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">INTERACTIVE</span>
+                                </h2>
+                                <p class="text-xs text-slate-400 font-mono">Institutional Options & Crypto Quantitative Risk Radar</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <select id="quant-strat-select" onchange="selectQuantStrategy(this.value)" class="bg-slate-900 border border-purple-500/40 text-purple-300 text-xs font-bold font-mono rounded-lg px-2.5 py-1.5 focus:outline-none cursor-pointer">
+                                <option value="BULL_PUT">SPY Bull Put Credit Spread (585P / 580P)</option>
+                                <option value="BEAR_CALL">QQQ Bear Call Spread (480C / 485C)</option>
+                                <option value="IRON_CONDOR">Iron Condor Neutral Income (575P - 595C)</option>
+                                <option value="STRANGLE">Delta Neutral Strangle Volatility Harvest</option>
+                                <option value="BTC_MOMENTUM">BTC/USD Momentum Accumulation</option>
+                            </select>
+                            <span id="analysis-updated-time" class="text-xs font-mono text-slate-500 shrink-0">Updated Live</span>
+                        </div>
+                    </div>
+
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                        <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+                            <span class="text-[11px] font-semibold text-slate-400 block mb-1">STRATEGY RECOMMENDATION</span>
+                            <div id="strat-name" class="text-sm font-bold text-cyan-300 font-mono">
+                                SPY Bull Put Credit Spread (585P / 580P)
+                            </div>
+                            <span id="strat-dte" class="text-xs text-slate-400 mt-1 block">Target Expiration: 30 DTE / Spot</span>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+                            <span class="text-[11px] font-semibold text-slate-400 block mb-1">MARKET REGIME CLASSIFICATION</span>
+                            <div id="strat-regime" class="text-sm font-bold text-emerald-400">
+                                Predictive Bullish Expansion
+                            </div>
+                            <span class="text-xs text-slate-400 mt-1 block">Continuous 24/7 Engine Active</span>
+                        </div>
+                    </div>
+
+                    <!-- QUANT RISK METRICS RADAR -->
+                    <div class="grid grid-cols-3 sm:grid-cols-6 gap-3 mb-5 text-center">
+                        <div class="p-2.5 rounded-lg bg-slate-950/50 border border-slate-800">
+                            <span class="text-[10px] text-slate-400 font-semibold block">IV RANK</span>
+                            <span id="risk-iv" class="text-xs font-bold font-mono text-amber-400">29.4%</span>
+                        </div>
+                        <div class="p-2.5 rounded-lg bg-slate-950/50 border border-slate-800">
+                            <span class="text-[10px] text-slate-400 font-semibold block">DELTA (Δ)</span>
+                            <span id="risk-delta" class="text-xs font-bold font-mono text-cyan-400">0.18</span>
+                        </div>
+                        <div class="p-2.5 rounded-lg bg-slate-950/50 border border-slate-800">
+                            <span class="text-[10px] text-slate-400 font-semibold block">GAMMA (Γ)</span>
+                            <span id="risk-gamma" class="text-xs font-bold font-mono text-purple-400">0.03</span>
+                        </div>
+                        <div class="p-2.5 rounded-lg bg-slate-950/50 border border-slate-800">
+                            <span class="text-[10px] text-slate-400 font-semibold block">THETA (Θ)</span>
+                            <span id="risk-theta" class="text-xs font-bold font-mono text-emerald-400">+0.16</span>
+                        </div>
+                        <div class="p-2.5 rounded-lg bg-slate-950/50 border border-slate-800">
+                            <span class="text-[10px] text-slate-400 font-semibold block">MAX GAIN</span>
+                            <span id="risk-maxgain" class="text-xs font-bold font-mono text-emerald-400">$140.00</span>
+                        </div>
+                        <div class="p-2.5 rounded-lg bg-slate-950/50 border border-slate-800">
+                            <span class="text-[10px] text-slate-400 font-semibold block">MAX RISK</span>
+                            <span id="risk-maxloss" class="text-xs font-bold font-mono text-rose-400">$360.00</span>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-purple-950/20 border border-purple-500/20 text-xs text-purple-200">
+                        <div class="flex items-center gap-2 font-bold mb-1 text-purple-300">
+                            <i class="fa-solid fa-brain"></i> Predictive Quantitative Rationale:
+                        </div>
+                        <p id="strat-reasoning" class="leading-relaxed">
+                            HyperNova Predictive Engine forecasts upward momentum shift with 90%+ historical accuracy. Selling put credit spread to capture theta decay.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- AUTONOMOUS TRADE EXECUTION AUDIT TRAIL LOG -->
+                <div class="glass-card rounded-2xl p-6">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                                <i class="fa-solid fa-list-check text-emerald-400"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-white">Autonomous Trade Execution & 24/7 Background Log</h2>
+                                <p class="text-xs text-slate-400 font-mono">Live Stream of Predictive Buy/Sell Signals & Role Email Alerts</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="audit-log-container" class="space-y-3 max-h-[280px] overflow-y-auto pr-1">
+                    </div>
+                </div>
+
+                <!-- ACTIVE POSITIONS TABLE -->
+                <div class="glass-card rounded-2xl p-6">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                                <i class="fa-solid fa-layer-group text-cyan-400"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-white">Active Alpaca Paper Positions</h2>
+                                <p class="text-xs text-slate-400 font-mono">Stocks, Options & Crypto</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs font-mono">
+                            <thead>
+                                <tr class="text-slate-400 border-b border-slate-800 pb-2">
+                                    <th class="pb-2">SYMBOL</th>
+                                    <th class="pb-2">SIDE</th>
+                                    <th class="pb-2">QTY</th>
+                                    <th class="pb-2">PRICE</th>
+                                    <th class="pb-2">MARKET VALUE</th>
+                                    <th class="pb-2">UNREALIZED P&L</th>
+                                    <th class="pb-2 text-right">QUICK ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="positions-table-body" class="divide-y divide-slate-800/60">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SEPARATE TRANSACTION AUDIT HISTORY DATABASE CARD -->
+                <div class="glass-card rounded-2xl p-6 border border-purple-500/40 relative">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-4 mb-4 gap-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+                                <i class="fa-solid fa-database text-purple-400"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-white flex items-center gap-2">
+                                    📜 Transaction Audit History Database
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono">SEPARATE JSON DB</span>
+                                </h2>
+                                <p class="text-xs text-slate-400 font-mono">Unique Codes (TX-ALPHA-XXXXX) & AI Reasoning &bull; Click "Ask AI Why" for Chatbot Memory Lookup</p>
+                            </div>
+                        </div>
+                        <button onclick="fetchTransactions()" class="px-3 py-1.5 rounded-lg bg-purple-900/60 hover:bg-purple-800 text-purple-200 text-xs font-bold border border-purple-500/40 transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-rotate text-xs"></i> Refresh DB
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto max-h-[360px] overflow-y-auto pr-1">
+                        <table class="w-full text-left text-xs font-mono">
+                            <thead class="sticky top-0 bg-slate-950/95 backdrop-blur-md z-10">
+                                <tr class="text-slate-400 border-b border-slate-800 pb-2">
+                                    <th class="pb-2 px-3">TX CODE</th>
+                                    <th class="pb-2 px-3">TIMESTAMP</th>
+                                    <th class="pb-2 px-3">SYMBOL</th>
+                                    <th class="pb-2 px-3">SIDE</th>
+                                    <th class="pb-2 px-3">QTY</th>
+                                    <th class="pb-2 px-3">ENTRY PRICE</th>
+                                    <th class="pb-2 px-3">GEMINI AI REASONING</th>
+                                    <th class="pb-2 px-3 text-right">QUICK ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-table-body" class="divide-y divide-slate-800/60">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 1. QUANT BILLIONAIRE TRADER INSIGHTS CARD -->
+                <div class="glass-card rounded-2xl p-6 relative border border-purple-500/40 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+                                <i class="fa-solid fa-quote-left text-purple-400"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-white flex items-center gap-2">
+                                    QUANT BILLIONAIRE TRADER INSIGHTS
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono">PUBLISHED QUOTES</span>
+                                </h2>
+                                <p class="text-xs text-slate-400 font-mono">Wisdom & Risk Principles from World's Top Investors</p>
+                            </div>
+                        </div>
+                        <button onclick="fetchRandomQuote()" class="px-3 py-1.5 rounded-lg bg-purple-900/60 hover:bg-purple-800 text-purple-200 text-xs font-bold border border-purple-500/40 transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-rotate text-xs"></i> New Quote
+                        </button>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-purple-950/40 to-slate-950 border border-purple-500/30 rounded-xl p-5 relative overflow-hidden text-center space-y-2">
+                        <div id="random-quote-text" class="text-base text-slate-100 font-serif italic max-w-xl mx-auto leading-relaxed">
+                            "Rule No. 1: Never lose money. Rule No. 2: Never forget rule No. 1."
+                        </div>
+                        <div id="random-quote-author" class="text-cyan-300 font-bold text-xs font-mono">
+                            — Warren Buffett
+                        </div>
+                        <div id="random-quote-publisher" class="text-slate-400 text-[10px] font-mono">
+                            Taken from: Essays of Warren Buffett / Wall Street Journal (Chairman & CEO, Berkshire Hathaway)
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. LIVE MARKET NEWS RADAR & POST OF THE WEEK CARD (UNDER QUOTES) -->
+                <div class="glass-card rounded-2xl p-6 relative border border-cyan-500/30 space-y-4">
+                    <!-- SECTION HEADER WITH TAB SWITCHER -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-800 pb-3 gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                                <i class="fa-solid fa-newspaper text-cyan-400"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-white flex items-center gap-2">
+                                    Live Market & Stock News Radar
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-mono">UPDATED DAILY</span>
+                                </h2>
+                                <p class="text-xs text-slate-400 font-mono">Real Online News, Images, Sources & Post of the Week</p>
+                            </div>
+                        </div>
+
+                        <!-- TABS SWITCHER -->
+                        <div class="inline-flex rounded-lg bg-slate-900 p-0.5 border border-slate-700 font-mono text-xs">
+                            <button id="tab-news-btn" onclick="switchNewsTab('news')" class="px-3 py-1 rounded-md bg-cyan-600 text-white font-bold transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-bolt text-xs"></i> Live Market News
+                            </button>
+                            <button id="tab-post-btn" onclick="switchNewsTab('post')" class="px-3 py-1 rounded-md text-slate-400 hover:text-white transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-award text-xs"></i> Post of the Week
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- TAB 1: LIVE MARKET & STOCK NEWS RADAR -->
+                    <div id="news-tab-content" class="space-y-3">
+                        <div class="flex items-center justify-between text-xs text-slate-400 font-mono">
+                            <span>Portfolio Stocks & Market Online News</span>
+                            <span id="news-updated-time" class="text-cyan-400 font-bold">Updated Today</span>
+                        </div>
+                        <div id="live-news-list" class="space-y-4 max-h-[420px] overflow-y-auto pr-1 font-sans">
+                            <!-- Dynamic news cards with images & sources injected here -->
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: POST OF THE WEEK SPOTLIGHT -->
+                    <div id="post-tab-content" class="hidden space-y-4 font-mono text-xs">
+                        <div id="post-of-the-week-card" class="bg-slate-950/80 border border-purple-500/30 rounded-xl p-5 space-y-3">
+                            <!-- Dynamic Post of the Week injected here -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: CHATBOT DRAWER & FREE STREAMING RADIO MUSIC PLAYER (4-5 COLS) -->
+            <div class="lg:col-span-5 xl:col-span-4 space-y-6">
+
+                <!-- MULTIMODAL CHART VISION CHATBOT DRAWER -->
+                <div class="glass-card rounded-2xl p-5 h-[620px] flex flex-col relative border border-slate-800">
+                    
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-cyan-500 p-[1.5px] shadow-lg shadow-purple-500/20">
+                                <div class="w-full h-full bg-slate-950 rounded-[10.5px] flex items-center justify-center">
+                                    <i class="fa-solid fa-robot text-purple-400"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                                    HyperNova AI Tutor & Vision
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                                </h2>
+                                <p class="text-[11px] text-slate-400 font-mono">Multimodal Chart Pattern Analysis Active</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="py-2.5 flex flex-wrap gap-1.5 border-b border-slate-800/80">
+                        <button onclick="sendQuickPrompt('Trade BTC/USD Crypto')" class="px-2.5 py-1 rounded-lg bg-amber-950/60 text-amber-300 text-[11px] border border-amber-500/30">🚀 Trade BTC</button>
+                        <button onclick="sendQuickPrompt('Execute SPY Credit Spread')" class="px-2.5 py-1 rounded-lg bg-purple-950/60 text-purple-300 text-[11px] border border-purple-500/30">⚡ SPY Spread</button>
+                        <button onclick="sendQuickPrompt('Analyze NVDA Chart Pattern')" class="px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 text-[11px] border border-emerald-500/30">📈 NVDA Pattern</button>
+                    </div>
+
+                    <div id="chat-messages" class="flex-1 overflow-y-auto py-3 space-y-3 pr-1">
+                        <div class="flex items-start gap-3">
+                            <div class="w-7 h-7 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center shrink-0">
+                                <i class="fa-solid fa-headset text-purple-400 text-xs"></i>
+                            </div>
+                            <div class="bg-slate-900/80 border border-slate-800 text-slate-200 rounded-2xl rounded-tl-none p-3.5 text-xs leading-relaxed max-w-[90%]">
+                                <div class="font-bold text-purple-300 mb-1 font-mono text-[11px]">HyperNova AI Assistant</div>
+                                Welcome! Ask options questions or type <strong>"Trade BTC"</strong> to execute automated paper orders with email alerts. You can also upload chart snapshots for pattern breakdown!
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-800 space-y-2">
+                        <!-- QUICK STOCK REVIEW PILLS -->
+                        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-[10px] font-mono no-scrollbar">
+                            <span class="text-slate-400 shrink-0">Review Stock:</span>
+                            <button onclick="quickAskStockInChatbot('NVDA')" class="px-2 py-0.5 rounded bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 border border-purple-500/30 shrink-0 transition">⚡ NVDA</button>
+                            <button onclick="quickAskStockInChatbot('AAPL')" class="px-2 py-0.5 rounded bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/30 shrink-0 transition">⚡ AAPL</button>
+                            <button onclick="quickAskStockInChatbot('TSLA')" class="px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 border border-emerald-500/30 shrink-0 transition">⚡ TSLA</button>
+                            <button onclick="quickAskStockInChatbot('SPY')" class="px-2 py-0.5 rounded bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 border border-purple-500/30 shrink-0 transition">⚡ SPY</button>
+                            <button onclick="quickAskStockInChatbot('BTC')" class="px-2 py-0.5 rounded bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 border border-amber-500/30 shrink-0 transition">⚡ BTC</button>
+                            <button onclick="quickAskStockInChatbot('AMD')" class="px-2 py-0.5 rounded bg-rose-500/20 hover:bg-rose-500/40 text-rose-300 border border-rose-500/30 shrink-0 transition">⚡ AMD</button>
+                            <button onclick="quickAskStockInChatbot('MSFT')" class="px-2 py-0.5 rounded bg-cyan-500/20 hover:bg-cyan-500/40 text-cyan-300 border border-cyan-500/30 shrink-0 transition">⚡ MSFT</button>
+                        </div>
+
+                        <form id="chat-form" onsubmit="handleChatSubmit(event)" class="flex items-center gap-2">
+                            <label class="cursor-pointer px-3 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-purple-400 border border-slate-700 transition flex items-center justify-center" title="Attach Chart Snapshot Image">
+                                <i class="fa-solid fa-image text-xs"></i>
+                                <input type="file" id="chat-image-input" accept="image/*" class="hidden" onchange="handleImageSelected(event)">
+                            </label>
+
+                            <input type="text" id="chat-input" placeholder="Ask options question or 'Review NVDA to buy or sell'..." 
+                                   class="flex-1 bg-slate-900/90 border border-slate-700/60 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition font-sans">
+                            <button type="submit" id="chat-send-btn" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-cyan-500 text-white text-xs font-semibold shadow-md transition flex items-center gap-1.5">
+                                <span>Send</span>
+                                <i class="fa-solid fa-paper-plane text-xs"></i>
+                            </button>
+                        </form>
+                        <div id="image-preview-badge" class="hidden text-[10px] text-cyan-400 font-mono flex items-center gap-1">
+                            <i class="fa-solid fa-paperclip"></i> Chart snapshot attached ready to analyze!
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SPICETIFY EMBEDDED MUSIC PLAYER & RADIO ENGINE -->
+                <div class="glass-card rounded-2xl p-5 relative border border-slate-800 space-y-3 shadow-xl">
+                    
+                    <!-- SPICETIFY HEADER -->
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
+                                <i class="fa-brands fa-spotify text-emerald-400 text-base animate-pulse"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xs font-bold text-white font-mono flex items-center gap-2">
+                                    Spicetify Music Engine
+                                    <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-mono">window.Spicetify Active</span>
+                                </h3>
+                            </div>
+                        </div>
+                        <span class="text-[10px] text-slate-400 font-mono flex items-center gap-1">
+                            <i class="fa-solid fa-compact-disc text-emerald-400 animate-spin"></i> Spicetify 2.38
+                        </span>
+                    </div>
+
+                    <!-- SEARCH BAR WITH DYNAMIC RESULTS POPUP -->
+                    <div class="relative">
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-emerald-400 text-xs">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </span>
+                            <input type="text" id="music-search" oninput="onMusicSearchInput(this.value)" onfocus="onMusicSearchFocus()" placeholder="Search Spicetify tracks, genres, artists (e.g. Lo-Fi, Cyber, Synth, Jazz, Pop, Ambient, Rock)..."
+                                   class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition font-mono">
+                            <button id="clear-search-btn" onclick="clearMusicSearch()" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white">
+                                <i class="fa-solid fa-circle-xmark text-xs"></i>
+                            </button>
+                        </div>
+
+                        <!-- INSTANT SEARCH RESULTS DROPDOWN -->
+                        <div id="spicetify-search-results" class="hidden absolute top-full left-0 right-0 mt-2 z-30 max-h-60 overflow-y-auto bg-slate-950/95 border border-emerald-500/40 rounded-xl shadow-2xl p-2 space-y-1 backdrop-blur-md">
+                            <!-- Dynamically filled with search results -->
+                        </div>
+                    </div>
+
+                    <!-- HIDDEN AUDIO PLAYER ELEMENT -->
+                    <audio id="radio-audio-player" crossorigin="anonymous" preload="none" ontimeupdate="updatePlayerProgress()" onended="playNextStation()"></audio>
+
+                    <!-- SPICETIFY TOAST NOTIFICATION CONTAINER -->
+                    <div id="spicetify-toast" class="hidden p-2 rounded-xl bg-emerald-950/90 border border-emerald-500/50 text-emerald-300 text-[11px] font-mono flex items-center justify-between transition animate-bounce">
+                        <span id="spicetify-toast-text" class="truncate"></span>
+                        <i class="fa-brands fa-spotify text-emerald-400 ml-2"></i>
+                    </div>
+
+                    <!-- TRACK DISPLAY & VISUALIZER -->
+                    <div class="flex items-center gap-3.5 bg-slate-900/70 p-3 rounded-xl border border-slate-800">
+                        <!-- BEAT-REACTIVE METALLIC BLOB VISUALIZER CANVAS -->
+                        <div class="w-14 h-14 rounded-xl overflow-hidden bg-slate-950 border border-emerald-500/40 relative flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/10">
+                            <canvas id="music-blob-canvas" class="w-full h-full"></canvas>
+                        </div>
+
+                        <div class="flex-1 min-w-0 space-y-1">
+                            <div class="flex items-center justify-between">
+                                <h4 id="spicetify-track-name" class="text-xs font-bold text-white font-mono truncate">Groove Salad - Lo-Fi Ambient</h4>
+                                <span id="spicetify-genre-badge" class="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">LO-FI</span>
+                            </div>
+                            <p id="spicetify-artist-name" class="text-[11px] text-slate-400 font-mono truncate">SomaFM &bull; Chillout Beats</p>
+
+                            <!-- PROGRESS BAR & TIME STAMPS -->
+                            <div class="space-y-0.5 pt-0.5">
+                                <div class="w-full bg-slate-800 rounded-full h-1.5 cursor-pointer overflow-hidden relative" onclick="handleProgressBarClick(event)">
+                                    <div id="spicetify-progress-fill" class="bg-gradient-to-r from-emerald-500 to-cyan-400 h-1.5 rounded-full transition-all duration-200" style="width: 0%"></div>
+                                </div>
+                                <div class="flex items-center justify-between text-[9px] text-slate-400 font-mono">
+                                    <span id="spicetify-time-current">00:00</span>
+                                    <span id="spicetify-time-total">LIVE</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FULL SONG SPOTIFY EMBED PLAYER FRAME (NO 30 SEC LIMIT) -->
+                    <div id="spotify-embed-container" class="rounded-xl overflow-hidden border border-emerald-500/40 shadow-lg mt-2">
+                        <iframe id="spotify-embed-iframe" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0" width="100%" height="80" frameborder="0" allowtransparency="true" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+                    </div>
+
+                    <!-- SPICETIFY PLAYER CONTROLS (SHUFFLE, PREV, PLAY/PAUSE, NEXT, REPEAT, VOLUME) -->
+                    <div class="flex items-center justify-between gap-2 pt-1">
+                        <div class="flex items-center gap-1.5">
+                            <button id="btn-shuffle" onclick="toggleShuffle()" class="w-7 h-7 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-emerald-400 flex items-center justify-center text-[11px] transition" title="Shuffle (Spicetify)">
+                                <i class="fa-solid fa-shuffle"></i>
+                            </button>
+
+                            <button onclick="Spicetify.Player.back()" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-xs transition" title="Previous Track (Spicetify.Player.back())">
+                                <i class="fa-solid fa-backward-step"></i>
+                            </button>
+
+                            <button onclick="Spicetify.Player.togglePlay()" id="radio-play-btn" class="w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-500 to-cyan-500 hover:scale-105 text-slate-950 font-bold flex items-center justify-center text-xs transition shadow-md shadow-emerald-500/30" title="Play / Pause (Spicetify.Player.togglePlay())">
+                                <i id="radio-play-icon" class="fa-solid fa-play ml-0.5"></i>
+                            </button>
+
+                            <button onclick="Spicetify.Player.next()" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center text-xs transition" title="Next Track (Spicetify.Player.next())">
+                                <i class="fa-solid fa-forward-step"></i>
+                            </button>
+
+                            <button id="btn-repeat" onclick="toggleRepeat()" class="w-7 h-7 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-emerald-400 flex items-center justify-center text-[11px] transition" title="Repeat (Spicetify)">
+                                <i class="fa-solid fa-repeat"></i>
+                            </button>
+                        </div>
+
+                        <!-- STATION SELECT & VOLUME -->
+                        <div class="flex items-center gap-2">
+                            <select id="radio-station-select" onchange="switchRadioStation(parseInt(this.value))" class="max-w-[110px] bg-slate-900 border border-slate-700 text-slate-200 text-[11px] rounded-lg p-1 font-mono truncate">
+                                <!-- Populated dynamically -->
+                            </select>
+
+                            <div class="flex items-center gap-1 text-slate-400">
+                                <i id="volume-icon" onclick="toggleMute()" class="fa-solid fa-volume-high text-[10px] cursor-pointer hover:text-white"></i>
+                                <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.7" onchange="Spicetify.Player.setVolume(this.value)" class="w-14 h-1 accent-emerald-500 cursor-pointer">
+                            </div>
+                        </div>
+                    </div>
+
+                    <span id="radio-status-text" class="text-[10px] text-emerald-400 font-mono block truncate text-center">Spicetify Stream Ready &bull; Type 'Spicetify' in Console</span>
+                </div>
+
+                <!-- RANDOM BILLIONAIRE TRADER QUOTE BOX AT PROFIT -->
+                <div id="billionaire-quote-card" class="glass-card rounded-2xl p-5 border border-amber-500/40 bg-amber-950/20 space-y-2 shadow-xl relative overflow-hidden transition hover:border-amber-400/60">
+                    <div class="flex items-center justify-between border-b border-amber-500/30 pb-2">
+                        <div class="flex items-center gap-2 text-xs font-bold text-amber-300 font-mono">
+                            <i class="fa-solid fa-quote-left text-amber-400"></i>
+                            <span>QUANT BILLIONAIRE TRADER INSIGHTS</span>
+                        </div>
+                        <button onclick="nextBillionaireQuote()" class="text-[10px] text-amber-400 hover:text-white px-2.5 py-0.5 rounded-lg bg-amber-500/20 border border-amber-500/30 font-mono transition">
+                            <i class="fa-solid fa-rotate mr-1"></i> Next Quote
+                        </button>
+                    </div>
+                    <p id="billionaire-quote-text" class="text-xs text-slate-200 italic leading-relaxed font-serif pt-1">
+                        "Rule No. 1: Never lose money. Rule No. 2: Never forget rule No. 1."
+                    </p>
+                    <div class="flex items-center justify-between text-[11px] font-mono pt-1">
+                        <span id="billionaire-quote-author" class="font-bold text-amber-300">— Warren Buffett</span>
+                        <span id="billionaire-quote-badge" class="text-[9px] text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">PROFIT SIGNAL ACTIVE</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <footer class="text-center text-xs text-slate-500 py-4 font-mono border-t border-slate-900 mt-6">
+            HyperNova Technology &bull; Alpaca AI Trading Agents Hackathon Submission
+        </footer>
+
+    </div>
+
+    <!-- MODAL: UPI PAYMENT DEPOSIT -->
+    <div id="upi-deposit-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4">
+        <div class="glass-card rounded-3xl p-6 w-full max-w-md space-y-4 border border-emerald-500/40 text-left shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-qrcode text-emerald-400"></i> Deposit Funds via UPI Gateway
+                </h3>
+                <button onclick="closeUpiDepositModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="p-3.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-xs text-emerald-200 leading-relaxed text-center space-y-2">
+                <p class="font-bold text-emerald-300">Scan QR Code or Pay to UPI ID:</p>
+                <div class="p-2 bg-white rounded-xl inline-block">
+                    <i class="fa-solid fa-qrcode text-6xl text-slate-950"></i>
+                </div>
+                <p class="font-mono text-cyan-300 text-sm font-bold">hypernova@upi</p>
+                <p class="text-[10px] text-slate-400">Supports Google Pay, PhonePe, Paytm & BHIM</p>
+            </div>
+
+            <form onsubmit="submitUpiDeposit(event)" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1 font-mono">DEPOSIT AMOUNT (₹ / $)</label>
+                    <input type="number" id="upi-amount" value="5000" min="500" required
+                           class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white font-mono">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1 font-mono">YOUR UPI ID / PHONE NUMBER</label>
+                    <input type="text" id="upi-id" placeholder="user@okaxis or 9876543210" required
+                           class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-white font-mono">
+                </div>
+                <button type="submit" class="btn-shimmer w-full py-3 rounded-xl text-white font-bold shadow-lg">
+                    VERIFY UPI TRANSACTION & CREDIT BALANCE
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: DAILY PERFORMANCE REPORT -->
+    <div id="daily-report-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4">
+        <div class="glass-card rounded-3xl p-6 w-full max-w-lg space-y-4 border border-purple-500/40 text-left shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-file-invoice text-purple-400"></i> Daily Performance Report Summary
+                </h3>
+                <button onclick="closeDailyReportModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div id="daily-report-content" class="space-y-2 text-xs font-mono text-slate-300 p-4 rounded-xl bg-slate-900/90 border border-slate-800">
+                <p>Loading daily report statistics...</p>
+            </div>
+
+            <div class="flex items-center gap-3 pt-2">
+                <a href="/api/download-report-pdf" target="_blank" class="btn-shimmer flex-1 py-2.5 rounded-xl text-white text-xs font-bold text-center flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-download"></i> Download Performance PDF Report
+                </a>
+    <!-- MODAL: LINK CUSTOM ALPACA PAPER API KEYS -->
+    <div id="alpaca-keys-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-950/85 backdrop-blur-md p-4">
+        <div class="glass-card rounded-3xl p-6 w-full max-w-lg space-y-4 border border-amber-500/40 text-left shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-key text-amber-400 text-lg"></i>
+                    <h3 class="text-base font-bold text-white">Link Custom Alpaca Paper Account</h3>
+                </div>
+                <button onclick="closeAlpacaKeysModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <p class="text-xs text-slate-300 leading-relaxed">
+                Connect your own <strong>Alpaca Paper Trading Account</strong> to execute trades directly on your account:
+            </p>
+
+            <form onsubmit="submitAlpacaKeys(event)" class="space-y-3 font-mono text-xs">
+                <div>
+                    <label class="block text-slate-400 font-semibold mb-1">ALPACA PAPER API KEY ID</label>
+                    <input type="text" id="custom-alpaca-key-input" placeholder="PK..." required
+                           class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:border-amber-400 focus:outline-none">
+                </div>
+                <div>
+                    <label class="block text-slate-400 font-semibold mb-1">ALPACA PAPER SECRET KEY</label>
+                    <input type="password" id="custom-alpaca-secret-input" placeholder="Secret Key..." required
+                           class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-white text-xs font-mono focus:border-amber-400 focus:outline-none">
+                </div>
+
+                <div class="pt-2 flex items-center gap-2">
+                    <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-700 text-slate-950 font-bold text-xs shadow-lg">
+                        LINK ALPACA PAPER ACCOUNT
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD JS LOGIC -->
+    <script>
+        let currentSymbol = 'SPY';
+        let isDarkMode = true;
+        let attachedBase64Image = null;
+
+        // 1. TACTILE FLUID SIMULATION BACKGROUND ENGINE (EXACTLY MATCHES LOGIN PORTAL)
+        class TactileFluidSimulation {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                if (!this.canvas) return;
+                this.ctx = this.canvas.getContext('2d');
+                this.width = this.canvas.width = window.innerWidth;
+                this.height = this.canvas.height = window.innerHeight;
+                this.particles = [];
+                this.splats = [];
+                this.ripples = [];
+                this.mouse = { x: this.width / 2, y: this.height / 2, px: this.width / 2, py: this.height / 2, vx: 0, vy: 0, speed: 0 };
+                this.colors = [
+                    { r: 139, g: 92, b: 246 },  // Brand Violet #8b5cf6
+                    { r: 6, g: 182, b: 212 },   // Hyper Cyan #06b6d4
+                    { r: 236, g: 72, b: 153 },  // Neon Pink #ec4899
+                    { r: 16, g: 185, b: 129 }   // Emerald Glow #10b981
+                ];
+                this.init();
+                this.bindEvents();
+                this.render();
+            }
+
+            resize() {
+                this.width = this.canvas.width = window.innerWidth;
+                this.height = this.canvas.height = window.innerHeight;
+            }
+
+            init() {
+                for (let i = 0; i < 50; i++) {
+                    this.particles.push({
+                        x: Math.random() * this.width,
+                        y: Math.random() * this.height,
+                        vx: (Math.random() - 0.5) * 0.6,
+                        vy: (Math.random() - 0.5) * 0.6,
+                        radius: Math.random() * 45 + 18,
+                        color: this.colors[Math.floor(Math.random() * this.colors.length)],
+                        alpha: Math.random() * 0.08 + 0.03
+                    });
+                }
+            }
+
+            bindEvents() {
+                window.addEventListener('resize', () => this.resize());
+                
+                const trackCursor = (x, y) => {
+                    this.mouse.vx = (x - this.mouse.px) * 0.8;
+                    this.mouse.vy = (y - this.mouse.py) * 0.8;
+                    this.mouse.speed = Math.sqrt(this.mouse.vx * this.mouse.vx + this.mouse.vy * this.mouse.vy);
+                    this.mouse.px = this.mouse.x;
+                    this.mouse.py = this.mouse.y;
+                    this.mouse.x = x;
+                    this.mouse.y = y;
+
+                    if (this.mouse.speed > 0.4) {
+                        this.spawnSplat(this.mouse.x, this.mouse.y, this.mouse.vx, this.mouse.vy, this.mouse.speed);
+                    }
+                };
+
+                window.addEventListener('mousemove', (e) => trackCursor(e.clientX, e.clientY));
+                window.addEventListener('touchmove', (e) => {
+                    if (e.touches.length > 0) trackCursor(e.touches[0].clientX, e.touches[0].clientY);
+                });
+            }
+
+            spawnSplat(x, y, vx, vy, speed) {
+                const count = Math.min(Math.floor(speed * 1.5) + 2, 10);
+                const col = this.colors[Math.floor(Math.random() * this.colors.length)];
+
+                for (let i = 0; i < count; i++) {
+                    const angle = Math.atan2(vy, vx) + (Math.random() - 0.5) * 0.8;
+                    const force = speed * (0.2 + Math.random() * 0.5);
+                    
+                    this.splats.push({
+                        x: x,
+                        y: y,
+                        vx: Math.cos(angle) * force + (Math.random() - 0.5) * 1.2,
+                        vy: Math.sin(angle) * force + (Math.random() - 0.5) * 1.2,
+                        radius: Math.min(speed * 2.5 + Math.random() * 10, 50),
+                        alpha: 0.35,
+                        color: col,
+                        life: 1.0,
+                        decay: 0.015 + Math.random() * 0.01
+                    });
+                }
+            }
+
+            spawnMusicDropRipple() {
+                const col = this.colors[Math.floor(Math.random() * this.colors.length)];
+                this.ripples.push({
+                    x: Math.random() * this.width,
+                    y: Math.random() * this.height,
+                    radius: 4,
+                    maxRadius: Math.random() * 70 + 35,
+                    alpha: 0.5,
+                    color: col
+                });
+            }
+
+            render() {
+                this.ctx.fillStyle = isDarkMode ? 'rgba(8, 12, 20, 0.22)' : 'rgba(248, 250, 252, 0.22)';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+
+                for (let p of this.particles) {
+                    let dx = p.x - this.mouse.x;
+                    let dy = p.y - this.mouse.y;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 180) {
+                        let force = (180 - dist) / 180;
+                        p.vx += (dx / dist) * force * 0.5;
+                        p.vy += (dy / dist) * force * 0.5;
+                    }
+
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vx *= 0.96;
+                    p.vy *= 0.96;
+
+                    if (p.x < 0) p.x = this.width;
+                    if (p.x > this.width) p.x = 0;
+                    if (p.y < 0) p.y = this.height;
+                    if (p.y > this.height) p.y = 0;
+
+                    const grad = this.ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius);
+                    grad.addColorStop(0, `rgba(${p.color.r}, ${p.color.g}, ${p.color.b}, ${p.alpha})`);
+                    grad.addColorStop(1, 'transparent');
+
+                    this.ctx.fillStyle = grad;
+                    this.ctx.beginPath();
+                    this.ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    this.ctx.fill();
+                }
+
+                for (let i = this.splats.length - 1; i >= 0; i--) {
+                    let s = this.splats[i];
+                    s.x += s.vx;
+                    s.y += s.vy;
+                    s.vx *= 0.94;
+                    s.vy *= 0.94;
+                    s.life -= s.decay;
+
+                    if (s.life <= 0) {
+                        this.splats.splice(i, 1);
+                        continue;
+                    }
+
+                    const grad = this.ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.radius * s.life);
+                    grad.addColorStop(0, `rgba(${s.color.r}, ${s.color.g}, ${s.color.b}, ${s.alpha * s.life})`);
+                    grad.addColorStop(0.5, `rgba(${s.color.r}, ${s.color.g}, ${s.color.b}, ${s.alpha * s.life * 0.3})`);
+                    grad.addColorStop(1, 'transparent');
+
+                    this.ctx.globalCompositeOperation = 'lighter';
+                    this.ctx.fillStyle = grad;
+                    this.ctx.beginPath();
+                    this.ctx.arc(s.x, s.y, s.radius * s.life, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    this.ctx.globalCompositeOperation = 'source-over';
+                }
+
+                // Render Music Beat Drop Ripples
+                if (typeof isRadioPlaying !== 'undefined' && isRadioPlaying && Math.random() < 0.10) {
+                    this.spawnMusicDropRipple();
+                }
+
+                for (let i = this.ripples.length - 1; i >= 0; i--) {
+                    let r = this.ripples[i];
+                    r.radius += 1.6;
+                    r.alpha -= 0.012;
+                    if (r.alpha <= 0 || r.radius >= r.maxRadius) {
+                        this.ripples.splice(i, 1);
+                        continue;
+                    }
+                    this.ctx.strokeStyle = `rgba(${r.color.r}, ${r.color.g}, ${r.color.b}, ${r.alpha})`;
+                    this.ctx.lineWidth = 1.8;
+                    this.ctx.beginPath();
+                    this.ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+                    this.ctx.stroke();
+                }
+
+                requestAnimationFrame(() => this.render());
+            }
+        }
+
+        let fluidEngine = null;
+        window.addEventListener('DOMContentLoaded', () => {
+            fluidEngine = new TactileFluidSimulation('fluid-canvas');
+        });
+
+
+
+        // 2. Dark / Light Theme Toggle
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            if(isDarkMode) {
+                document.documentElement.classList.add('dark');
+                document.documentElement.classList.remove('light');
+                document.getElementById('theme-icon').className = 'fa-solid fa-moon text-purple-400';
+                document.getElementById('theme-text').innerText = 'Dark Mode';
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.documentElement.classList.add('light');
+                document.getElementById('theme-icon').className = 'fa-solid fa-sun text-amber-400';
+                document.getElementById('theme-text').innerText = 'Light Mode';
+            }
+            initTradingViewChart(currentSymbol);
+        }
+
+        // 3. TradingView Chart Initialization
+        function initTradingViewChart(symbol) {
+            let tvSymbol = 'AMEX:SPY';
+            if(symbol === 'QQQ') tvSymbol = 'NASDAQ:QQQ';
+            else if(symbol === 'IWM') tvSymbol = 'AMEX:IWM';
+            else if(symbol === 'BTC') tvSymbol = 'BINANCE:BTCUSDT';
+            else if(symbol === 'ETH') tvSymbol = 'BINANCE:ETHUSDT';
+            else if(symbol === 'SOL') tvSymbol = 'BINANCE:SOLUSDT';
+            else if(symbol === 'NVDA') tvSymbol = 'NASDAQ:NVDA';
+            else if(symbol === 'AAPL') tvSymbol = 'NASDAQ:AAPL';
+            else if(symbol === 'TSLA') tvSymbol = 'NASDAQ:TSLA';
+            else if(symbol === 'MSFT') tvSymbol = 'NASDAQ:MSFT';
+            else if(symbol === 'AMZN') tvSymbol = 'NASDAQ:AMZN';
+
+            document.getElementById('chart-symbol-badge').innerText = symbol;
+
+            if(typeof TradingView !== 'undefined') {
+                document.getElementById('tradingview_chart').innerHTML = '';
+                new TradingView.widget({
+                    "autosize": true,
+                    "symbol": tvSymbol,
+                    "interval": "60",
+                    "timezone": "Etc/UTC",
+                    "theme": isDarkMode ? "dark" : "light",
+                    "style": "1",
+                    "locale": "en",
+                    "enable_publishing": false,
+                    "container_id": "tradingview_chart"
+                });
+            }
+        }
+
+        function changeAssetSymbol(symbol) {
+            currentSymbol = symbol;
+            document.getElementById('asset-select').value = symbol;
+            initTradingViewChart(symbol);
+            runAnalysisAndTrade(symbol);
+        }
+
+        function demoChartTrade(action) {
+            alert(`⚡ Demo Test ${action} Signal Triggered for ${currentSymbol}! Submitting paper trade...`);
+            runAnalysisAndTrade(currentSymbol);
+        }
+
+        // 4. Fetch Account Data & Check Evaluator Role Rules
+        async function fetchAccountData() {
+            try {
+                const res = await fetch('/api/account');
+                const data = await res.json();
+                if(data.success) {
+                    document.getElementById('metric-equity').innerText = data.raw.portfolio_value;
+                    document.getElementById('metric-cash').innerText = data.raw.cash_available;
+                    
+                    const depositBtn = document.getElementById('btn-upi-deposit');
+                    if(depositBtn) {
+                        depositBtn.classList.remove('hidden');
+                    }
+                    document.getElementById('equity-status-text').innerHTML = `<i class="fa-solid fa-qrcode text-emerald-400"></i> Deposit / Top-Up Active (Persisted)`;
+
+                    if(data.learning_metrics) {
+                        document.getElementById('metric-winrate').innerText = `${data.learning_metrics.win_rate}%`;
+                    }
+                }
+            } catch(e) { console.error(e); }
+            fetchPositions();
+            fetchLogs();
+            fetchTransactions();
+        }
+
+        async function fetchTransactions() {
+            try {
+                const res = await fetch('/api/transactions');
+                const data = await res.json();
+                const tbody = document.getElementById('transactions-table-body');
+                if(!tbody) return;
+                tbody.innerHTML = '';
+
+                if(data.success && data.transactions && data.transactions.length > 0) {
+                    data.transactions.forEach(tx => {
+                        const isBuy = (tx.side || '').toUpperCase() === 'BUY';
+                        const sideClass = isBuy ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border-rose-500/30';
+                        
+                        const row = `
+                            <tr class="hover:bg-slate-900/60 transition font-mono text-xs">
+                                <td class="py-3 px-3">
+                                    <span class="px-2 py-1 rounded bg-purple-950/80 text-purple-300 font-extrabold border border-purple-500/40 text-[11px]">
+                                        ${tx.tx_code}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3 text-slate-400 text-[11px]">${tx.timestamp}</td>
+                                <td class="py-3 px-3 font-extrabold text-white">${tx.symbol}</td>
+                                <td class="py-3 px-3">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-extrabold border ${sideClass}">
+                                        ${tx.side}
+                                    </span>
+                                </td>
+                                <td class="py-3 px-3 text-slate-300">${tx.qty}</td>
+                                <td class="py-3 px-3 text-cyan-300 font-bold">${tx.entry_price}</td>
+                                <td class="py-3 px-3 text-slate-300 max-w-xs truncate" title="${tx.reasoning}">
+                                    ${tx.reasoning}
+                                </td>
+                                <td class="py-3 px-3 text-right">
+                                    <button onclick="askChatbotAboutTx('${tx.tx_code}', '${tx.symbol}')" class="px-2.5 py-1 rounded-lg bg-gradient-to-r from-purple-600 to-cyan-500 text-white font-bold text-[11px] shadow-md hover:scale-105 transition flex items-center gap-1 inline-flex">
+                                        <i class="fa-solid fa-robot"></i> Ask AI Why
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += row;
+                    });
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-slate-400">No transactions recorded yet.</td></tr>`;
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function askChatbotAboutTx(txCode, symbol) {
+            const chatInput = document.getElementById('chat-input');
+            if(chatInput) {
+                chatInput.value = `Why did transaction ${txCode} for ${symbol} execute and what caused its price movement?`;
+                handleChatSubmit();
+            }
+        }
+
+
+        async function fetchPositions() {
+            try {
+                const res = await fetch('/api/positions');
+                const data = await res.json();
+                const tbody = document.getElementById('positions-table-body');
+                tbody.innerHTML = '';
+
+                if(data.success && data.positions.length > 0) {
+                    data.positions.forEach(p => {
+                        const plClass = p.unrealized_pl >= 0 ? 'text-emerald-400' : 'text-rose-400';
+                        const sideClass = p.side === 'long' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400';
+                        
+                        let actionBtns = '';
+                        if(data.can_trade) {
+                            actionBtns = `
+                                <div class="flex items-center justify-end gap-1.5">
+                                    <button onclick="executeQuickPositionTrade('${p.symbol}', 'BUY')" class="px-2 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-300 text-[10px] font-bold border border-emerald-500/30 transition" title="Buy More ${p.symbol}">
+                                        + Buy More
+                                    </button>
+                                    <button onclick="executeQuickPositionTrade('${p.symbol}', 'SELL')" class="px-2 py-1 rounded bg-rose-500/20 hover:bg-rose-500/40 text-rose-300 text-[10px] font-bold border border-rose-500/30 transition" title="Sell / Close ${p.symbol}">
+                                        ✕ Sell
+                                    </button>
+                                    <button onclick="runAnalysisAndTrade('${p.symbol}')" class="px-2 py-1 rounded bg-purple-500/20 hover:bg-purple-500/40 text-purple-300 text-[10px] font-bold border border-purple-500/30 transition" title="Trade Similar ${p.symbol}">
+                                        ⚡ Similar
+                                    </button>
+                                </div>
+                            `;
+                        } else {
+                            actionBtns = `<span class="text-[10px] text-cyan-400 font-mono"><i class="fa-solid fa-shield-halved"></i> Guided AI Guarded</span>`;
+                        }
+
+                        const row = `
+                            <tr class="hover:bg-slate-900/40">
+                                <td class="py-3 font-bold text-white">${p.symbol}</td>
+                                <td class="py-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${sideClass}">${p.side.toUpperCase()}</span></td>
+                                <td class="py-3">${p.qty}</td>
+                                <td class="py-3">$${p.current_price.toFixed(2)}</td>
+                                <td class="py-3">$${p.market_value.toFixed(2)}</td>
+                                <td class="py-3 font-bold ${plClass}">
+                                    ${p.unrealized_pl >= 0 ? '+' : ''}$${p.unrealized_pl.toFixed(2)} (${p.unrealized_plpc.toFixed(2)}%)
+                                </td>
+                                <td class="py-3 text-right">
+                                    ${actionBtns}
+                                </td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += row;
+                    });
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function executeQuickPositionTrade(symbol, side) {
+            if(!confirm(`Confirm paper ${side} order execution for ${symbol}?`)) return;
+            try {
+                const res = await fetch('/api/analyze-and-trade', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symbol: symbol, side: side })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert(`✅ Paper ${side} order submitted for ${symbol}! Order ID: ${data.order_details?.order_id || 'ORD-EXECUTED'}`);
+                    fetchAccountData();
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function runAnalysisAndTrade(sym = currentSymbol) {
+            const btn = document.getElementById('btn-run-agent');
+            const origHTML = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Analyzing...`;
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/analyze-and-trade', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symbol: sym })
+                });
+                const data = await res.json();
+
+                if(data.success && data.analysis) {
+                    const a = data.analysis;
+                    const conf = a.confidence_score;
+                    document.getElementById('metric-confidence').innerText = `${conf.toFixed(1)}%`;
+                    document.getElementById('confidence-progress-bar').style.width = `${conf}%`;
+                    
+                    document.getElementById('strat-name').innerText = a.strategy_recommended;
+                    document.getElementById('strat-regime').innerText = a.market_regime;
+                    document.getElementById('strat-reasoning').innerText = a.reasoning;
+                    document.getElementById('strat-dte').innerText = `Expiration: ${a.expiration || '30 DTE'}`;
+                    document.getElementById('analysis-updated-time').innerText = `Updated: ${a.last_updated}`;
+
+                    if(a.risk_metrics) {
+                        document.getElementById('risk-iv').innerText = a.risk_metrics.iv_rank || 'N/A';
+                        document.getElementById('risk-delta').innerText = a.risk_metrics.delta || 'N/A';
+                        document.getElementById('risk-gamma').innerText = a.risk_metrics.gamma || 'N/A';
+                        document.getElementById('risk-theta').innerText = a.risk_metrics.theta || 'N/A';
+                        document.getElementById('risk-maxgain').innerText = a.risk_metrics.max_gain || 'N/A';
+                        document.getElementById('risk-maxloss').innerText = a.risk_metrics.max_loss || 'N/A';
+                    }
+
+                    // Dispatch client-side real EmailJS notification
+                    sendEmailJSPing(sym, a.strategy_recommended, a.confidence_score, a.reasoning);
+
+                    // Update Billionaire Quote at profit
+                    nextBillionaireQuote();
+                }
+            } catch(e) { console.error(e); } 
+            finally {
+                btn.innerHTML = origHTML;
+                btn.disabled = false;
+                fetchLogs();
+                fetchPositions();
+                fetchTransactions();
+            }
+        }
+
+        // QUANT BILLIONAIRE TRADER QUOTES ENGINE
+        const billionaireQuotes = [
+            { text: "Rule No. 1: Never lose money. Rule No. 2: Never forget rule No. 1.", author: "Warren Buffett (Berkshire Hathaway)" },
+            { text: "We rely on mathematics, algorithms, and emotionless quantitative execution. Models don't panic.", author: "Jim Simons (Renaissance Technologies)" },
+            { text: "He who lives by the crystal ball will eat ground glass. Adapt strictly to quantitative probability and risk control.", author: "Ray Dalio (Bridgewater Associates)" },
+            { text: "Intellectual capital will always trump financial capital. Protect your downside and the upside will take care of itself.", author: "Paul Tudor Jones (Tudor Investment)" },
+            { text: "It's not whether you're right or wrong, but how much money you make when you're right and how little you lose when you're wrong.", author: "George Soros (Soros Fund Management)" },
+            { text: "Markets are efficient because hyper-fast algorithms and quants search for edge every millisecond.", author: "Ken Griffin (Citadel)" }
+        ];
+
+        let quoteIndex = 0;
+        function nextBillionaireQuote() {
+            quoteIndex = (quoteIndex + 1) % billionaireQuotes.length;
+            const q = billionaireQuotes[quoteIndex];
+            const card = document.getElementById('billionaire-quote-card');
+            if (card) {
+                card.classList.add('opacity-50');
+                setTimeout(() => {
+                    document.getElementById('billionaire-quote-text').innerText = `"${q.text}"`;
+                    document.getElementById('billionaire-quote-author').innerText = `— ${q.author}`;
+                    card.classList.remove('opacity-50');
+                }, 150);
+            }
+        }
+
+        // HYPERNOVA QUANT STRATEGY INTERACTIVE SELECTOR
+        function selectQuantStrategy(key) {
+            const stratMap = {
+                'BULL_PUT': {
+                    name: 'SPY Bull Put Credit Spread (585P / 580P)',
+                    regime: 'Predictive Bullish Expansion',
+                    iv: '29.4%', delta: '0.18', gamma: '0.03', theta: '+0.16', maxgain: '$140.00', maxloss: '$360.00',
+                    reasoning: 'HyperNova Quantitative Engine identifies strong technical support rebound at 20-SMA. Selling put credit spread captures theta decay.'
+                },
+                'BEAR_CALL': {
+                    name: 'QQQ Bear Call Credit Spread (480C / 485C)',
+                    regime: 'Quantitative Bearish Resistance Test',
+                    iv: '34.1%', delta: '-0.15', gamma: '0.04', theta: '+0.22', maxgain: '$175.00', maxloss: '$325.00',
+                    reasoning: 'RSI overbought divergence on QQQ resistance. Selling call credit spread captures high implied volatility contraction.'
+                },
+                'IRON_CONDOR': {
+                    name: 'Iron Condor Neutral Income (SPY 570P/575P - 595C/600C)',
+                    regime: 'Low-Beta Range-Bound Compression',
+                    iv: '22.8%', delta: '0.02', gamma: '0.01', theta: '+0.34', maxgain: '$210.00', maxloss: '$290.00',
+                    reasoning: 'Range-bound volatility compression predicted across 30 DTE cycle. Max theta harvest strategy initialized.'
+                },
+                'STRANGLE': {
+                    name: 'Delta Neutral Strangle Volatility Harvest',
+                    regime: 'Implied Volatility Expansion Breakout',
+                    iv: '41.5%', delta: '0.00', gamma: '0.06', theta: '+0.45', maxgain: '$310.00', maxloss: '$690.00',
+                    reasoning: 'Delta neutral strangle captures non-directional volatility expansion across earnings events.'
+                },
+                'BTC_MOMENTUM': {
+                    name: 'BTC/USD Momentum Accumulation Strategy',
+                    regime: 'Crypto Bullish Momentum Trend',
+                    iv: '58.2%', delta: '0.75', gamma: '0.08', theta: '-0.10', maxgain: 'UNLIMITED', maxloss: '$1,200.00',
+                    reasoning: 'Gemini Trading AI chart vision confirms RSI oversold bounce with MACD histogram crossover above 50-SMA.'
+                }
+            };
+
+            const s = stratMap[key] || stratMap['BULL_PUT'];
+            document.getElementById('strat-name').innerText = s.name;
+            document.getElementById('strat-regime').innerText = s.regime;
+            document.getElementById('risk-iv').innerText = s.iv;
+            document.getElementById('risk-delta').innerText = s.delta;
+            document.getElementById('risk-gamma').innerText = s.gamma;
+            document.getElementById('risk-theta').innerText = s.theta;
+            document.getElementById('risk-maxgain').innerText = s.maxgain;
+            document.getElementById('risk-maxloss').innerText = s.maxloss;
+            document.getElementById('strat-reasoning').innerText = s.reasoning;
+            document.getElementById('analysis-updated-time').innerText = `Updated: ${new Date().toLocaleTimeString()}`;
+
+            runAnalysisAndTrade(currentSymbol);
+        }
+
+        // REAL EMAIL DISPATCHER VIA CLIENT-SIDE EMAILJS
+        function sendEmailJSPing(symbol, strategy, confidence, details) {
+            const alertEmail = document.getElementById('header-alert-email')?.innerText || "founder.hypernovatechnology@gmail.com";
+            console.log(`[EmailJS Real Dispatch] Sending trade alert ping for ${symbol} to ${alertEmail}`);
+            if (typeof emailjs !== 'undefined') {
+                try {
+                    emailjs.send("service_hypernova", "template_trade_alert", {
+                        to_email: alertEmail,
+                        symbol: symbol,
+                        strategy: strategy,
+                        confidence: confidence + "%",
+                        message: details
+                    }).then(() => {
+                        console.log(`✅ Real EmailJS ping delivered to ${alertEmail}`);
+                    }).catch(err => {
+                        console.log(`EmailJS status note: ${err.text || err}`);
+                    });
+                } catch(e) { }
+            }
+        }
+
+
+        async function fetchLogs() {
+            try {
+                const res = await fetch('/api/logs');
+                const data = await res.json();
+                const container = document.getElementById('audit-log-container');
+                container.innerHTML = '';
+
+                if(data.success && data.logs) {
+                    data.logs.forEach(log => {
+                        const isBuy = (log.side || log.action || '').toUpperCase().includes('BUY');
+                        const badgeColor = isBuy ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' : 'bg-rose-500/20 text-rose-300 border-rose-500/40';
+                        const sideText = isBuy ? 'BUY' : 'SELL';
+
+                        const item = `
+                            <div class="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 text-xs flex flex-col gap-2 shadow-md hover:border-purple-500/40 transition">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${badgeColor}">
+                                            ${sideText} &bull; ${log.symbol}
+                                        </span>
+                                        <span class="font-mono text-cyan-400 text-[10px] font-bold">${log.confidence || '94.2'}% CONF</span>
+                                    </div>
+                                    <span class="font-mono text-slate-500 text-[10px]">${log.timestamp}</span>
+                                </div>
+                                <div class="font-bold text-white text-xs">${log.strategy}</div>
+                                <div class="grid grid-cols-2 gap-2 text-[10px] font-mono bg-slate-950/70 p-2 rounded-xl border border-slate-800">
+                                    <div><span class="text-slate-400">Alpaca Order ID:</span> <span class="text-purple-300 font-bold">${log.order_id || 'ORD-ALPACA'}</span></div>
+                                    <div><span class="text-slate-400">RSI Indicator:</span> <span class="text-emerald-400 font-bold">${log.rsi || '34.2 Oversold'}</span></div>
+                                    <div><span class="text-slate-400">MACD Signal:</span> <span class="text-cyan-300 font-bold">${log.macd || 'Bullish Crossover'}</span></div>
+                                    <div><span class="text-slate-400">Alert Email:</span> <span class="text-slate-300 font-bold">${log.alert_email || data.recipient}</span></div>
+                                </div>
+                                <div class="text-[11px] text-slate-300 font-mono leading-relaxed bg-purple-950/20 p-2 rounded-lg border border-purple-500/20">
+                                    <i class="fa-solid fa-brain text-purple-400 mr-1"></i> ${log.details}
+                                </div>
+                            </div>
+                        `;
+                        container.innerHTML += item;
+                    });
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function promptUpdateAlertEmail() {
+            const currentEmail = document.getElementById('header-alert-email').innerText;
+            const newEmail = prompt("Enter your email address to receive trade alert pings:", currentEmail);
+            if(newEmail && newEmail.trim() && newEmail.includes('@')) {
+                try {
+                    const res = await fetch('/api/set-alert-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: newEmail.trim() })
+                    });
+                    const data = await res.json();
+                    if(data.success) {
+                        document.getElementById('header-alert-email').innerText = data.email;
+                        alert(`✅ Alert email updated to: ${data.email}`);
+                    } else {
+                        alert(data.error || "Failed to update email.");
+                    }
+                } catch(e) { console.error(e); }
+            }
+        }
+
+        // 5. Chatbot Vision & Text Submission
+        function handleImageSelected(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    attachedBase64Image = evt.target.result;
+                    document.getElementById('image-preview-badge').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        async function handleChatSubmit(e) {
+            if(e) e.preventDefault();
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if(!message && !attachedBase64Image) return;
+
+            input.value = '';
+            appendChatMessage('user', message + (attachedBase64Image ? ' [Chart Snapshot Attached]' : ''));
+            
+            const sendBtn = document.getElementById('chat-send-btn');
+            sendBtn.disabled = true;
+
+            const typingId = appendTypingIndicator();
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message, image: attachedBase64Image })
+                });
+                const data = await res.json();
+                removeTypingIndicator(typingId);
+
+                if(data.success) {
+                    appendChatMessage('assistant', data.reply, data.provider);
+                    if(data.auto_traded) {
+                        fetchLogs();
+                        fetchPositions();
+                    }
+                }
+            } catch(err) {
+                removeTypingIndicator(typingId);
+                appendChatMessage('assistant', 'Error communicating with HyperNova AI Core.');
+            } finally {
+                sendBtn.disabled = false;
+                attachedBase64Image = null;
+                document.getElementById('image-preview-badge').classList.add('hidden');
+            }
+        }
+
+        function sendQuickPrompt(promptText) {
+            document.getElementById('chat-input').value = promptText;
+            handleChatSubmit();
+        }
+
+        function appendChatMessage(sender, text, provider) {
+            const container = document.getElementById('chat-messages');
+            const isUser = sender === 'user';
+            const bgClass = isUser ? 'bg-purple-950/40 border border-purple-500/30 text-white' : 'bg-slate-900/80 border border-slate-800 text-slate-200';
+            const providerBadge = provider ? `<span class="block text-[10px] text-purple-400 font-mono mb-1 font-semibold">${provider}</span>` : '';
+
+            let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+
+            const msgHTML = `
+                <div class="flex items-start gap-3 ${isUser ? 'flex-row-reverse' : ''}">
+                    <div class="w-7 h-7 rounded-lg ${isUser ? 'bg-purple-500/20' : 'bg-cyan-500/20'} flex items-center justify-center shrink-0">
+                        <i class="fa-solid ${isUser ? 'fa-user text-purple-400' : 'fa-robot text-cyan-400'} text-xs"></i>
+                    </div>
+                    <div class="${bgClass} rounded-2xl ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} p-3.5 text-xs leading-relaxed max-w-[88%]">
+                        ${providerBadge}
+                        ${formattedText}
+                    </div>
+                </div>
+            `;
+            container.innerHTML += msgHTML;
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function appendTypingIndicator() {
+            const container = document.getElementById('chat-messages');
+            const id = `typing-${Date.now()}`;
+            const html = `
+                <div id="${id}" class="flex items-start gap-3">
+                    <div class="w-7 h-7 rounded-lg bg-purple-500/20 flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-robot text-purple-400 text-xs animate-spin"></i>
+                    </div>
+                    <div class="bg-slate-900/80 border border-slate-800 rounded-2xl px-4 py-3 text-xs text-slate-400">
+                        <span>HyperNova AI evaluating pattern...</span>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += html;
+            container.scrollTop = container.scrollHeight;
+            return id;
+        }
+
+        function removeTypingIndicator(id) {
+            const el = document.getElementById(id);
+            if(el) el.remove();
+        }
+
+        // 6. UPI Payment / Paper Money Deposit Modal Functions
+        function openUpiDepositModal() { document.getElementById('upi-deposit-modal').classList.remove('hidden'); }
+        function closeUpiDepositModal() { document.getElementById('upi-deposit-modal').classList.add('hidden'); }
+
+        function openAlpacaKeysModal() { document.getElementById('alpaca-keys-modal').classList.remove('hidden'); }
+        function closeAlpacaKeysModal() { document.getElementById('alpaca-keys-modal').classList.add('hidden'); }
+
+        async function submitAlpacaKeys(e) {
+            e.preventDefault();
+            const key = document.getElementById('custom-alpaca-key-input').value.trim();
+            const secret = document.getElementById('custom-alpaca-secret-input').value.trim();
+
+            try {
+                const res = await fetch('/api/set-alpaca-keys', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ api_key: key, secret_key: secret })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert(`✅ ${data.message}`);
+                    closeAlpacaKeysModal();
+                    fetchAccountData();
+                } else {
+                    alert(data.error || "Failed to link API keys");
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function promptUpdateTradeLimit() {
+            const val = prompt("Enter Max Investment Limit per Trade for Continuous AI ($):", "5000");
+            if(val && !isNaN(val)) {
+                try {
+                    const res = await fetch('/api/set-trade-limit', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ limit: parseFloat(val) })
+                    });
+                    const data = await res.json();
+                    if(data.success) {
+                        document.getElementById('header-trade-limit').innerText = `$${data.max_investment_limit.toLocaleString()}`;
+                        alert(`✅ ${data.message}`);
+                    }
+                } catch(e) { console.error(e); }
+            }
+        }
+
+        async function submitUpiDeposit(e) {
+            e.preventDefault();
+            const amt = parseFloat(document.getElementById('upi-amount').value);
+            const upiId = document.getElementById('upi-id').value;
+
+            try {
+                const res = await fetch('/api/deposit-upi', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: amt, upi_id: upiId })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    alert(`✅ Paper Account Credit Verified! Credited ₹${amt.toLocaleString()} / $${amt.toLocaleString()} to your portfolio equity balance. Ref: ${data.tx_ref}`);
+                    closeUpiDepositModal();
+                    fetchAccountData();
+                } else {
+                    alert(data.error || "Deposit failed");
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // 7. Daily Report Modal Functions
+        function openDailyReportModal() {
+            document.getElementById('daily-report-modal').classList.remove('hidden');
+            fetchDailyReport();
+        }
+        function closeDailyReportModal() { document.getElementById('daily-report-modal').classList.add('hidden'); }
+
+        async function fetchDailyReport() {
+            try {
+                const res = await fetch('/api/daily-report');
+                const data = await res.json();
+                if(data.success && data.report) {
+                    const r = data.report;
+                    document.getElementById('daily-report-content').innerHTML = `
+                        <p class="text-cyan-300 font-bold">Daily Report Date: ${r.date}</p>
+                        <p>User Account: ${r.user} (${r.role.toUpperCase()})</p>
+                        <p>Portfolio Equity: <span class="text-white font-bold">${r.portfolio_value}</span></p>
+                        <p>Daily Net P&L: <span class="text-emerald-400 font-bold">${r.daily_profit_loss}</span></p>
+                        <p>Predictive Win Rate: <span class="text-purple-300 font-bold">${r.predictive_win_rate}</span></p>
+                        <p>Best Trade Today: <span class="text-amber-300">${r.best_trade}</span></p>
+                        <p>Alert Mail Recipient: <span class="text-slate-400">${r.email_ping_recipient}</span></p>
+                    `;
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // 8. SPICETIFY MUSIC PLAYER ENGINE & GLOBAL CONSOLE OBJECT (window.Spicetify)
+        const radioStations = [
+            { id: 0, name: "Groove Salad", artist: "SomaFM Ambient", genre: "Lo-Fi Ambient", url: "https://ice1.somafm.com/groovesalad-128-mp3", cover: "https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=100&auto=format&fit=crop&q=60" },
+            { id: 1, name: "Midnight City Cyberpunk", artist: "HyperNova Synth", genre: "Cyberpunk", url: "https://ice1.somafm.com/cliqhop-128-mp3", cover: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=100&auto=format&fit=crop&q=60" },
+            { id: 2, name: "Quantum Deep Focus", artist: "Quant AI Orchestra", genre: "Deep Ambient", url: "https://ice1.somafm.com/dronezone-128-mp3", cover: "https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=100&auto=format&fit=crop&q=60" },
+            { id: 3, name: "Secret Agent Lounge", artist: "SomaFM Jazz", genre: "Jazz Lounge", url: "https://ice1.somafm.com/secretagent-128-mp3", cover: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=100&auto=format&fit=crop&q=60" },
+            { id: 4, name: "DefCon Cyber Beats", artist: "Dark Tech Syndicate", genre: "Cyber Techno", url: "https://ice1.somafm.com/defcon-128-mp3", cover: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=100&auto=format&fit=crop&q=60" },
+            { id: 5, name: "PopTron Retro Synth", artist: "Retro Wave Stars", genre: "Pop Synth", url: "https://ice1.somafm.com/poptron-128-mp3", cover: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=100&auto=format&fit=crop&q=60" },
+            { id: 6, name: "Deep Space Station", artist: "Nebula Explorer", genre: "Space Ambient", url: "https://ice1.somafm.com/spacestation-128-mp3", cover: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=100&auto=format&fit=crop&q=60" },
+            { id: 7, name: "Suburbs of Goa", artist: "Asian Chillout Beats", genre: "Chillout", url: "https://ice1.somafm.com/suburbsofgoa-128-mp3", cover: "https://images.unsplash.com/photo-1506157786151-b8491531f063?w=100&auto=format&fit=crop&q=60" },
+            { id: 8, name: "Indie Pop Horizon", artist: "Glass Beats", genre: "Indie Rock", url: "https://ice1.somafm.com/indiepop-128-mp3", cover: "https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=100&auto=format&fit=crop&q=60" }
+        ];
+
+        let currentStationIndex = 0;
+        let isRadioPlaying = false;
+        let isShuffle = false;
+        let isRepeat = false;
+        let audioEl = null;
+        let musicBlobCanvas, musicBlobCtx;
+        let audioCtx = null, analyser = null, dataArray = null;
+        let playerListeners = [];
+
+        function initAudioEngine() {
+            audioEl = document.getElementById('radio-audio-player');
+            if(audioEl) {
+                audioEl.volume = parseFloat(document.getElementById('volume-slider').value);
+            }
+            populateRadioSelectDropdown();
+            setupSpicetifyGlobalObject();
+        }
+
+        function populateRadioSelectDropdown(list = radioStations) {
+            const select = document.getElementById('radio-station-select');
+            if(!select) return;
+            select.innerHTML = '';
+            list.forEach(st => {
+                const opt = document.createElement('option');
+                opt.value = st.id;
+                opt.innerText = st.name;
+                select.appendChild(opt);
+            });
+            if(list.length > 0) {
+                select.value = list[0].id;
+            }
+        }
+
+        // ADMIN CONTROL FUNCTIONS (MASTER ADMIN ROLE)
+        async function adminToggleAiLoop() {
+            try {
+                const res = await fetch('/api/admin/toggle-ai-loop', { method: 'POST' });
+                const data = await res.json();
+                if(data.success) {
+                    alert(data.message);
+                    fetchAccountData();
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function adminSetRiskLevel(level) {
+            try {
+                const res = await fetch('/api/admin/set-risk-level', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ level: level })
+                });
+                const data = await res.json();
+                if(data.success) {
+                    displaySpicetifyToast(`Solinfinte Alpha: Risk Sensitivity set to ${data.ai_risk_level}`);
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        async function adminLiquidateAll() {
+            if(!confirm("⚠️ ARE YOU SURE? This will execute emergency liquidation of all active paper positions!")) return;
+            try {
+                const res = await fetch('/api/admin/liquidate-all', { method: 'POST' });
+                const data = await res.json();
+                if(data.success) {
+                    alert(`🚨 ${data.message}`);
+                    fetchAccountData();
+                    fetchPositions();
+                    fetchLogs();
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function onMusicSearchFocus() {
+            const val = document.getElementById('music-search').value;
+            onMusicSearchInput(val);
+        }
+
+        async function onMusicSearchInput(query) {
+            const resultsBox = document.getElementById('spicetify-search-results');
+            const clearBtn = document.getElementById('clear-search-btn');
+            const q = query.toLowerCase().trim();
+
+            if(!q) {
+                resultsBox.classList.add('hidden');
+                clearBtn.classList.add('hidden');
+                return;
+            }
+
+            clearBtn.classList.remove('hidden');
+
+            // Local curated matches
+            const matches = radioStations.filter(st => 
+                st.name.toLowerCase().includes(q) || 
+                st.artist.toLowerCase().includes(q) || 
+                st.genre.toLowerCase().includes(q)
+            );
+
+            resultsBox.innerHTML = `
+                <div class="p-2 text-center text-slate-400 text-xs font-mono flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-spinner animate-spin text-emerald-400"></i> Searching Spotify & iTunes Global Tracks for "${query}"...
+                </div>
+            `;
+            resultsBox.classList.remove('hidden');
+
+            try {
+                // Worldwide API search (phonks, pop, rap, edm, rock, etc.)
+                const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(q)}&media=music&limit=12`);
+                const data = await res.json();
+                const globalTracks = data.results || [];
+
+                resultsBox.innerHTML = '';
+
+                if(matches.length === 0 && globalTracks.length === 0) {
+                    resultsBox.innerHTML = `
+                        <div class="p-3 text-center text-slate-400 text-xs font-mono">
+                            <i class="fa-solid fa-compact-disc text-rose-400 mb-1 block"></i>
+                            No matching tracks found for "${query}"
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Render local station matches
+                matches.forEach(st => {
+                    const item = document.createElement('div');
+                    item.className = 'flex items-center justify-between p-2 rounded-lg hover:bg-emerald-950/60 border border-transparent hover:border-emerald-500/30 cursor-pointer transition text-xs font-mono';
+                    item.onclick = () => selectSearchResultTrack(st.id);
+                    item.innerHTML = `
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <img src="${st.cover}" class="w-8 h-8 rounded-md object-cover border border-slate-700 shrink-0">
+                            <div class="min-w-0">
+                                <div class="font-bold text-white truncate">${st.name}</div>
+                                <div class="text-[10px] text-slate-400 truncate">${st.artist}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="px-2 py-0.5 rounded text-[9px] bg-purple-500/20 text-purple-300 border border-purple-500/30">${st.genre}</span>
+                            <button class="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-[10px] font-bold">
+                                <i class="fa-solid fa-play ml-0.5"></i>
+                            </button>
+                        </div>
+                    `;
+                    resultsBox.appendChild(item);
+                });
+
+                // Render worldwide Spotify/iTunes search results (phonks, K-pop, rap, rock, etc.)
+                globalTracks.forEach(tr => {
+                    if(!tr.previewUrl) return;
+                    const trackObj = {
+                        name: tr.trackName,
+                        artist: tr.artistName,
+                        genre: tr.primaryGenreName || 'Music',
+                        url: tr.previewUrl,
+                        cover: tr.artworkUrl100 || tr.artworkUrl60 || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=100'
+                    };
+
+                    const item = document.createElement('div');
+                    item.className = 'flex items-center justify-between p-2 rounded-lg hover:bg-emerald-950/60 border border-transparent hover:border-emerald-500/30 cursor-pointer transition text-xs font-mono';
+                    item.onclick = () => playCustomGlobalTrack(trackObj);
+                    item.innerHTML = `
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <img src="${trackObj.cover}" class="w-8 h-8 rounded-md object-cover border border-slate-700 shrink-0">
+                            <div class="min-w-0">
+                                <div class="font-bold text-white truncate">${trackObj.name}</div>
+                                <div class="text-[10px] text-slate-400 truncate">${trackObj.artist} &bull; ${tr.collectionName || ''}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="px-2 py-0.5 rounded text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">${trackObj.genre}</span>
+                            <button class="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center text-[10px] font-bold">
+                                <i class="fa-solid fa-play ml-0.5"></i>
+                            </button>
+                        </div>
+                    `;
+                    resultsBox.appendChild(item);
+                });
+
+            } catch(e) {
+                console.error("Global track search error:", e);
+            }
+        }
+
+        function playCustomGlobalTrack(trackObj) {
+            document.getElementById('spicetify-search-results').classList.add('hidden');
+            
+            document.getElementById('spicetify-track-name').innerText = trackObj.name;
+            document.getElementById('spicetify-artist-name').innerText = `${trackObj.artist} • ${trackObj.genre}`;
+            document.getElementById('spicetify-genre-badge').innerText = trackObj.genre.toUpperCase();
+            document.getElementById('radio-status-text').innerText = `Spotify Full Stream: ${trackObj.name}`;
+
+            const iframe = document.getElementById('spotify-embed-iframe');
+            if(iframe) {
+                iframe.src = `https://open.spotify.com/embed/search?q=${encodeURIComponent(trackObj.name + ' ' + trackObj.artist)}`;
+            }
+
+            if(audioEl) {
+                audioEl.src = trackObj.url;
+                audioEl.play().then(() => {
+                    isRadioPlaying = true;
+                    document.getElementById('radio-play-icon').className = 'fa-solid fa-pause';
+                    initWebAudioAnalyser();
+                }).catch(e => console.log("Audio play notice:", e));
+            }
+
+            displaySpicetifyToast(`Playing Full Song: ${trackObj.name} - ${trackObj.artist}`);
+            emitSpicetifyEvent('songchange', trackObj);
+        }
+
+        function clearMusicSearch() {
+            const input = document.getElementById('music-search');
+            input.value = '';
+            onMusicSearchInput('');
+        }
+
+        function selectSearchResultTrack(index) {
+            document.getElementById('spicetify-search-results').classList.add('hidden');
+            switchRadioStation(index);
+            if(!isRadioPlaying) {
+                toggleRadioPlay();
+            }
+            displaySpicetifyToast(`Playing: ${radioStations[index].name} - ${radioStations[index].artist}`);
+        }
+
+        function switchRadioStation(index) {
+            currentStationIndex = index;
+            const station = radioStations.find(s => s.id === index) || radioStations[0];
+
+            document.getElementById('radio-station-select').value = station.id;
+            document.getElementById('spicetify-track-name').innerText = station.name;
+            document.getElementById('spicetify-artist-name').innerText = `${station.artist} • ${station.genre}`;
+            document.getElementById('spicetify-genre-badge').innerText = station.genre.toUpperCase();
+            document.getElementById('radio-status-text').innerText = `Spicetify Active: ${station.name}`;
+
+            if(audioEl) {
+                audioEl.src = station.url;
+                if(isRadioPlaying) {
+                    audioEl.play().catch(e => console.log("Audio play notice:", e));
+                }
+            }
+            emitSpicetifyEvent('songchange', station);
+        }
+
+        function toggleRadioPlay() {
+            if(!audioEl.src) {
+                switchRadioStation(currentStationIndex);
+            }
+
+            const icon = document.getElementById('radio-play-icon');
+            const status = document.getElementById('radio-status-text');
+
+            if(isRadioPlaying) {
+                audioEl.pause();
+                isRadioPlaying = false;
+                icon.className = 'fa-solid fa-play ml-0.5';
+                status.innerText = 'Spicetify Player Paused';
+                emitSpicetifyEvent('onplaypause', { isPaused: true });
+            } else {
+                audioEl.play().then(() => {
+                    isRadioPlaying = true;
+                    icon.className = 'fa-solid fa-pause';
+                    status.innerText = `Playing Live: ${radioStations[currentStationIndex].name}`;
+                    initWebAudioAnalyser();
+                    emitSpicetifyEvent('onplaypause', { isPaused: false });
+                }).catch(e => {
+                    console.log("Audio playback:", e);
+                    isRadioPlaying = true;
+                    icon.className = 'fa-solid fa-pause';
+                    status.innerText = `Playing Stream...`;
+                });
+            }
+        }
+
+        function playPrevStation() {
+            if(isShuffle) {
+                currentStationIndex = Math.floor(Math.random() * radioStations.length);
+            } else {
+                currentStationIndex = (currentStationIndex - 1 + radioStations.length) % radioStations.length;
+            }
+            switchRadioStation(currentStationIndex);
+            if(!isRadioPlaying) toggleRadioPlay();
+        }
+
+        function playNextStation() {
+            if(isShuffle) {
+                currentStationIndex = Math.floor(Math.random() * radioStations.length);
+            } else {
+                currentStationIndex = (currentStationIndex + 1) % radioStations.length;
+            }
+            switchRadioStation(currentStationIndex);
+            if(!isRadioPlaying) toggleRadioPlay();
+        }
+
+        function toggleShuffle() {
+            isShuffle = !isShuffle;
+            const btn = document.getElementById('btn-shuffle');
+            if(isShuffle) {
+                btn.className = 'w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center text-[11px] transition';
+                displaySpicetifyToast('Spicetify: Shuffle Mode Enabled');
+            } else {
+                btn.className = 'w-7 h-7 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-emerald-400 flex items-center justify-center text-[11px] transition';
+                displaySpicetifyToast('Spicetify: Shuffle Mode Disabled');
+            }
+        }
+
+        function toggleRepeat() {
+            isRepeat = !isRepeat;
+            const btn = document.getElementById('btn-repeat');
+            if(isRepeat) {
+                btn.className = 'w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center text-[11px] transition';
+                displaySpicetifyToast('Spicetify: Repeat Mode Enabled');
+            } else {
+                btn.className = 'w-7 h-7 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-emerald-400 flex items-center justify-center text-[11px] transition';
+                displaySpicetifyToast('Spicetify: Repeat Mode Disabled');
+            }
+        }
+
+        function adjustVolume(vol) {
+            if(audioEl) audioEl.volume = parseFloat(vol);
+            document.getElementById('volume-slider').value = vol;
+        }
+
+        function toggleMute() {
+            if(audioEl) {
+                audioEl.muted = !audioEl.muted;
+                const icon = document.getElementById('volume-icon');
+                if(audioEl.muted) {
+                    icon.className = 'fa-solid fa-volume-xmark text-[10px] text-rose-400 cursor-pointer';
+                } else {
+                    icon.className = 'fa-solid fa-volume-high text-[10px] text-slate-400 cursor-pointer hover:text-white';
+                }
+            }
+        }
+
+        function updatePlayerProgress() {
+            if(!audioEl) return;
+            const cur = audioEl.currentTime || 0;
+            const dur = audioEl.duration || 180;
+            const pct = Math.min(100, (cur / dur) * 100);
+
+            document.getElementById('spicetify-progress-fill').style.width = `${pct}%`;
+            document.getElementById('spicetify-time-current').innerText = formatTime(cur);
+            document.getElementById('spicetify-time-total').innerText = isNaN(dur) || dur === Infinity ? 'LIVE' : formatTime(dur);
+        }
+
+        function handleProgressBarClick(e) {
+            if(!audioEl || isNaN(audioEl.duration)) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const pct = (e.clientX - rect.left) / rect.width;
+            audioEl.currentTime = pct * audioEl.duration;
+        }
+
+        function formatTime(secs) {
+            const m = Math.floor(secs / 60);
+            const s = Math.floor(secs % 60);
+            return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        function displaySpicetifyToast(text) {
+            const toast = document.getElementById('spicetify-toast');
+            const txt = document.getElementById('spicetify-toast-text');
+            if(toast && txt) {
+                txt.innerText = text;
+                toast.classList.remove('hidden');
+                setTimeout(() => {
+                    toast.classList.add('hidden');
+                }, 3500);
+            }
+        }
+
+        // SETUP GLOBAL `window.Spicetify` API OBJECT FOR DEVTOOLS & EXTENSIONS
+        function setupSpicetifyGlobalObject() {
+            const spicetifyObj = {
+                Player: {
+                    play: function() {
+                        if(!isRadioPlaying) toggleRadioPlay();
+                    },
+                    pause: function() {
+                        if(isRadioPlaying) toggleRadioPlay();
+                    },
+                    togglePlay: function() {
+                        toggleRadioPlay();
+                    },
+                    next: function() {
+                        playNextStation();
+                    },
+                    back: function() {
+                        playPrevStation();
+                    },
+                    seek: function(percent) {
+                        if(audioEl && audioEl.duration) {
+                            audioEl.currentTime = (percent / 100) * audioEl.duration;
+                        }
+                    },
+                    getVolume: function() {
+                        return audioEl ? audioEl.volume : 0.7;
+                    },
+                    setVolume: function(val) {
+                        adjustVolume(val);
+                    },
+                    get data() {
+                        const st = radioStations[currentStationIndex] || radioStations[0];
+                        return {
+                            track: {
+                                name: st.name,
+                                uri: 'spotify:track:' + st.id,
+                                album: { name: st.genre, images: [{ url: st.cover }] },
+                                artists: [{ name: st.artist }]
+                            },
+                            progress: audioEl ? Math.floor(audioEl.currentTime * 1000) : 0,
+                            duration: audioEl && audioEl.duration ? Math.floor(audioEl.duration * 1000) : 180000,
+                            isPaused: !isRadioPlaying
+                        };
+                    },
+                    addEventListener: function(event, listener) {
+                        playerListeners.push({ event, listener });
+                    },
+                    removeEventListener: function(event, listener) {
+                        playerListeners = playerListeners.filter(l => l.listener !== listener);
+                    }
+                },
+                showNotification: function(text) {
+                    displaySpicetifyToast(text);
+                },
+                search: function(query) {
+                    const q = query.toLowerCase();
+                    return radioStations.filter(s => s.name.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q) || s.genre.toLowerCase().includes(q));
+                },
+                getStations: function() {
+                    return radioStations;
+                },
+                CosmosAsync: {
+                    get: async (url) => ({ status: 'ok', url }),
+                    post: async (url, body) => ({ status: 'ok', body })
+                },
+                URI: {
+                    isTrack: (uri) => typeof uri === 'string' && uri.includes('track'),
+                    isAlbum: (uri) => typeof uri === 'string' && uri.includes('album')
+                },
+                Platform: {
+                    Version: '2.38.3',
+                    OS: 'windows'
+                },
+                LocalStorage: {
+                    get: (key) => localStorage.getItem(key),
+                    set: (key, val) => localStorage.setItem(key, val)
+                }
+            };
+
+            window.Spicetify = spicetifyObj;
+            try {
+                window.top.Spicetify = spicetifyObj;
+            } catch(e) { }
+
+            console.log(
+                '%c[Spicetify Engine Loaded] Type Spicetify or window.Spicetify in DevTools console to access player controls and properties!',
+                'color: #1db954; font-weight: bold; font-size: 13px;'
+            );
+        }
+
+        function emitSpicetifyEvent(event, data) {
+            playerListeners.filter(l => l.event === event).forEach(l => {
+                try { l.listener(data); } catch(e) {}
+            });
+        }
+
+        // Web Audio FFT Analyser for Beat-Reactive Metallic Blob
+        function initWebAudioAnalyser() {
+            try {
+                if(!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    const src = audioCtx.createMediaElementSource(audioEl);
+                    analyser = audioCtx.createAnalyser();
+                    analyser.fftSize = 64;
+                    src.connect(analyser);
+                    analyser.connect(audioCtx.destination);
+                    dataArray = new Uint8Array(analyser.frequencyBinCount);
+                }
+            } catch(e) { console.log("Analyser init note:", e); }
+        }
+
+        function initMusicBlob() {
+            musicBlobCanvas = document.getElementById('music-blob-canvas');
+            if(!musicBlobCanvas) return;
+            musicBlobCtx = musicBlobCanvas.getContext('2d');
+            musicBlobCanvas.width = 64;
+            musicBlobCanvas.height = 64;
+            animateMusicBlob();
+        }
+
+        let blobPhase = 0;
+        function animateMusicBlob() {
+            let audioEnergy = 0;
+            if(analyser && dataArray && isRadioPlaying) {
+                analyser.getByteFrequencyData(dataArray);
+                let sum = 0;
+                for(let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+                audioEnergy = sum / dataArray.length / 255;
+            }
+
+            blobPhase += isRadioPlaying ? (0.05 + audioEnergy * 0.1) : 0.02;
+            if(musicBlobCtx) {
+                musicBlobCtx.clearRect(0, 0, 64, 64);
+
+                const centerX = 32, centerY = 32;
+                const radius = isRadioPlaying ? 18 + (audioEnergy * 8) : 18;
+
+                const grad = musicBlobCtx.createRadialGradient(centerX, centerY, 5, centerX, centerY, 30);
+                grad.addColorStop(0, '#1db954');
+                grad.addColorStop(0.5, '#8b5cf6');
+                grad.addColorStop(1, '#06b6d4');
+
+                musicBlobCtx.fillStyle = grad;
+                musicBlobCtx.beginPath();
+                
+                for(let a = 0; a < Math.PI * 2; a += 0.2) {
+                    const r = radius + Math.sin(a * 6 + blobPhase) * (isRadioPlaying ? (3 + audioEnergy * 6) : 2);
+                    const x = centerX + Math.cos(a) * r;
+                    const y = centerY + Math.sin(a) * r;
+                    if(a === 0) musicBlobCtx.moveTo(x, y);
+                    else musicBlobCtx.lineTo(x, y);
+                }
+                musicBlobCtx.closePath();
+                musicBlobCtx.fill();
+            }
+
+            requestAnimationFrame(animateMusicBlob);
+        }
+
+        // ==============================================================================
+        // MULTI-CHART GRID VIEW & RENDERING ENGINE
+        // ==============================================================================
+        let currentChartViewMode = 'single';
+        let multiChartSymbols = ['SPY', 'NVDA', 'BTC', 'AAPL'];
+
+        function getTradingViewSymbol(symbol) {
+            let clean = (symbol || 'SPY').toUpperCase().replace(' ', '').replace('/USD', '');
+            if(clean === 'QQQ') return 'NASDAQ:QQQ';
+            if(clean === 'IWM') return 'AMEX:IWM';
+            if(clean === 'BTC') return 'BINANCE:BTCUSDT';
+            if(clean === 'ETH') return 'BINANCE:ETHUSDT';
+            if(clean === 'SOL') return 'BINANCE:SOLUSDT';
+            if(clean === 'NVDA') return 'NASDAQ:NVDA';
+            if(clean === 'AAPL') return 'NASDAQ:AAPL';
+            if(clean === 'TSLA') return 'NASDAQ:TSLA';
+            if(clean === 'MSFT') return 'NASDAQ:MSFT';
+            if(clean === 'AMZN') return 'NASDAQ:AMZN';
+            if(clean === 'AMD') return 'NASDAQ:AMD';
+            if(clean === 'GOOGL') return 'NASDAQ:GOOGL';
+            if(clean === 'META') return 'NASDAQ:META';
+            return `NASDAQ:${clean}`;
+        }
+
+        function switchChartView(mode) {
+            currentChartViewMode = mode;
+            const singleBtn = document.getElementById('view-single-btn');
+            const multiBtn = document.getElementById('view-multi-btn');
+            const singleWrapper = document.getElementById('single_chart_wrapper');
+            const multiContainer = document.getElementById('multichart_grid_container');
+
+            if (mode === 'multi') {
+                if(singleBtn) singleBtn.className = "px-2 py-0.5 rounded-md text-slate-400 hover:text-white transition flex items-center gap-1";
+                if(multiBtn) multiBtn.className = "px-2 py-0.5 rounded-md bg-purple-600 text-white font-bold transition flex items-center gap-1";
+                if(singleWrapper) singleWrapper.classList.add('hidden');
+                if(multiContainer) multiContainer.classList.remove('hidden');
+                renderMultiCharts();
+            } else {
+                if(singleBtn) singleBtn.className = "px-2 py-0.5 rounded-md bg-purple-600 text-white font-bold transition flex items-center gap-1";
+                if(multiBtn) multiBtn.className = "px-2 py-0.5 rounded-md text-slate-400 hover:text-white transition flex items-center gap-1";
+                if(multiContainer) multiContainer.classList.add('hidden');
+                if(singleWrapper) singleWrapper.classList.remove('hidden');
+                initTradingViewChart(currentSymbol);
+            }
+        }
+
+        function renderMultiCharts() {
+            if (typeof TradingView === 'undefined') return;
+            multiChartSymbols.forEach((sym, idx) => {
+                const containerId = `tv_multi_chart_${idx}`;
+                const containerEl = document.getElementById(containerId);
+                if (containerEl) {
+                    containerEl.innerHTML = '';
+                    new TradingView.widget({
+                        "autosize": true,
+                        "symbol": getTradingViewSymbol(sym),
+                        "interval": "60",
+                        "timezone": "Etc/UTC",
+                        "theme": isDarkMode ? "dark" : "light",
+                        "style": "1",
+                        "locale": "en",
+                        "enable_publishing": false,
+                        "hide_side_toolbar": true,
+                        "container_id": containerId
+                    });
+                }
+            });
+        }
+
+        function updateMultiChart(index, newSymbol) {
+            multiChartSymbols[index] = newSymbol;
+            renderMultiCharts();
+        }
+
+        function demoChartTradeForSymbol(symbol, side) {
+            alert(`⚡ ${side} Order Executed for ${symbol}! Submitting paper order...`);
+            runAnalysisAndTrade(symbol);
+        }
+
+        function copyStockToChatbotForSymbol(symbol) {
+            quickAskStockInChatbot(symbol);
+        }
+
+        // ==============================================================================
+        // STOCK COPY & CHATBOT REVIEW INTEGRATION
+        // ==============================================================================
+        function searchCustomStock() {
+            const input = document.getElementById('custom-stock-input');
+            const val = input ? input.value.trim().toUpperCase() : '';
+            if(val) {
+                changeAssetSymbol(val);
+                input.value = '';
+            }
+        }
+
+        function copyStockToChatbot() {
+            const symbol = currentSymbol || 'NVDA';
+            const promptText = `Review and analyze stock ${symbol} to buy or sell based on Gemini AI review`;
+            
+            // Copy symbol & prompt to clipboard
+            if(navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(symbol);
+            }
+            
+            quickAskStockInChatbot(symbol);
+        }
+
+        function quickAskStockInChatbot(symbol) {
+            const chatInput = document.getElementById('chat-input');
+            const chatForm = document.getElementById('chat-form');
+            const promptText = `Review stock ${symbol} to buy or sell based on Gemini AI review`;
+            
+            if(chatInput) {
+                chatInput.value = promptText;
+                chatInput.focus();
+                
+                // Submit chat form automatically to trigger Gemini review & paper trade
+                if(chatForm) {
+                    chatForm.requestSubmit();
+                }
+            }
+        }
+
+        // ==============================================================================
+        // MARKET NEWS RADAR & POST OF THE WEEK & QUOTES INTEGRATION
+        // ==============================================================================
+        async function fetchMarketNews() {
+            try {
+                const res = await fetch('/api/market-news');
+                const data = await res.json();
+                if(data.success) {
+                    const listEl = document.getElementById('live-news-list');
+                    if(listEl && data.news) {
+                        listEl.innerHTML = '';
+                        data.news.forEach(n => {
+                            const sentimentClass = n.sentiment.includes('BULLISH') ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border-rose-500/30';
+                            listEl.innerHTML += `
+                                <div class="p-4 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition flex flex-col sm:flex-row gap-4 items-start">
+                                    <div class="w-full sm:w-32 h-24 rounded-lg overflow-hidden shrink-0 border border-slate-800 bg-slate-950">
+                                        <img src="${n.image_url}" alt="${n.symbol} News Image" class="w-full h-full object-cover">
+                                    </div>
+                                    <div class="flex-1 space-y-1.5">
+                                        <div class="flex items-center justify-between text-xs font-mono">
+                                            <div class="flex items-center gap-2 flex-wrap">
+                                                <span class="px-2 py-0.5 rounded font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">${n.symbol}</span>
+                                                <span class="text-cyan-400 font-semibold">${n.source_label || 'Taken from ' + n.source}</span>
+                                                <span class="text-slate-500">• ${n.timestamp}</span>
+                                            </div>
+                                            <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${sentimentClass}">${n.sentiment} (${n.impact_score})</span>
+                                        </div>
+                                        <h4 class="font-bold text-white text-sm hover:text-cyan-300 transition">
+                                            <a href="${n.url}" target="_blank" class="flex items-center gap-1.5">
+                                                <span>${n.title}</span>
+                                            </a>
+                                        </h4>
+                                        <p class="text-slate-300 text-xs font-sans leading-relaxed">${n.summary}</p>
+                                        <div class="pt-1 flex items-center justify-between text-xs font-mono">
+                                            <a href="${n.url}" target="_blank" class="text-cyan-400 hover:text-cyan-300 font-bold flex items-center gap-1">
+                                                <span>Read Full Story on ${n.source}</span>
+                                                <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                                            </a>
+                                            <button onclick="askChatbotAboutNews('${n.title.replace(/'/g, "\\'")}', '${n.symbol}')" class="px-2.5 py-1 rounded-lg bg-purple-900/60 hover:bg-purple-800 text-purple-200 text-[11px] font-bold border border-purple-500/40 transition flex items-center gap-1">
+                                                <i class="fa-solid fa-robot text-purple-400"></i> Ask AI Chatbot
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    const postCard = document.getElementById('post-of-the-week-card');
+                    if(postCard && data.post_of_the_week) {
+                        const p = data.post_of_the_week;
+                        let bullets = p.key_takeaways.map(t => `<li class="text-slate-300">${t}</li>`).join('');
+                        postCard.innerHTML = `
+                            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                                <span class="px-2.5 py-1 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">${p.badge}</span>
+                                <span class="text-slate-400 text-xs">${p.date}</span>
+                            </div>
+                            <h3 class="text-sm font-bold text-white font-sans">${p.title}</h3>
+                            <div class="text-xs text-purple-400 font-bold">Author: ${p.author}</div>
+                            <p class="text-slate-300 text-xs font-sans leading-relaxed">${p.summary}</p>
+                            <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 space-y-1">
+                                <div class="font-bold text-cyan-300 text-xs">Institutional Takeaways:</div>
+                                <ul class="space-y-1 list-disc pl-4 text-xs font-sans">${bullets}</ul>
+                            </div>
+                            <p class="text-slate-400 text-[11px] font-sans italic">${p.full_analysis}</p>
+                        `;
+                    }
+                }
+            } catch(e) { console.error("Market news fetch error:", e); }
+        }
+
+        function askChatbotAboutNews(title, symbol) {
+            const chatInput = document.getElementById('chat-input');
+            const chatForm = document.getElementById('chat-form');
+            const promptText = `Tell me more details about this news on ${symbol}: "${title}". What is the market impact and recommended trade?`;
+            
+            if(chatInput) {
+                chatInput.value = promptText;
+                chatInput.focus();
+                if(chatForm) {
+                    chatForm.requestSubmit();
+                }
+            }
+        }
+
+        async function fetchRandomQuote() {
+            try {
+                const res = await fetch('/api/random-quote');
+                const data = await res.json();
+                if(data.success && data.quote) {
+                    const q = data.quote;
+                    document.getElementById('random-quote-text').innerText = `"${q.quote}"`;
+                    document.getElementById('random-quote-author').innerText = `— ${q.author}`;
+                    document.getElementById('random-quote-publisher').innerText = `Publisher: ${q.publisher} (${q.source})`;
+                }
+            } catch(e) { console.error("Quote fetch error:", e); }
+        }
+
+        function switchNewsTab(tab) {
+            const newsTab = document.getElementById('news-tab-content');
+            const postTab = document.getElementById('post-tab-content');
+            const quotesTab = document.getElementById('quotes-tab-content');
+
+            const newsBtn = document.getElementById('tab-news-btn');
+            const postBtn = document.getElementById('tab-post-btn');
+            const quotesBtn = document.getElementById('tab-quotes-btn');
+
+            [newsTab, postTab, quotesTab].forEach(t => t?.classList.add('hidden'));
+            [newsBtn, postBtn, quotesBtn].forEach(b => {
+                if(b) b.className = "px-3 py-1 rounded-md text-slate-400 hover:text-white transition flex items-center gap-1.5";
+            });
+
+            if(tab === 'post') {
+                postTab.classList.remove('hidden');
+                postBtn.className = "px-3 py-1 rounded-md bg-purple-600 text-white font-bold transition flex items-center gap-1.5";
+            } else if(tab === 'quotes') {
+                quotesTab.classList.remove('hidden');
+                quotesBtn.className = "px-3 py-1 rounded-md bg-purple-600 text-white font-bold transition flex items-center gap-1.5";
+            } else {
+                newsTab.classList.remove('hidden');
+                newsBtn.className = "px-3 py-1 rounded-md bg-cyan-600 text-white font-bold transition flex items-center gap-1.5";
+            }
+        }
+
+        // Automatic 3-Second Poll Loop for Real-Time 24/7 Updates
+        setInterval(() => {
+            fetchAccountData();
+        }, 3000);
+
+        window.addEventListener('DOMContentLoaded', () => {
+            fetchAccountData();
+            initTradingViewChart(currentSymbol);
+            initAudioEngine();
+            initMusicBlob();
+            fetchMarketNews();
+            fetchRandomQuote();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+flask>=3.0.0
+alpaca-py>=0.44.0
+google-genai>=1.73.0
+requests>=2.30.0
+gunicorn>=21.0.0
+serverless-wsgi>=3.0.0

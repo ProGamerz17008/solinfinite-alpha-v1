@@ -1,0 +1,67 @@
+{
+  "users_db": {
+    "admin": {
+      "password": "alpaca2026",
+      "email": "evaluator.judge@hackathon.org",
+      "role": "evaluator",
+      "balance_added": 0.0,
+      "initial_equity": 1000000.0,
+      "profit_earned": 27642.0,
+      "custom_alpaca_key": "PK4EAUYBC7UG5NXBR23MAZZWYN",
+      "custom_alpaca_secret": "J4eBjKpKWWHvcq8ebpoEemPmWRw6pnmRHwzcBXXEhZ4g"
+    },
+    "masteradmin": {
+      "password": "admin2026",
+      "email": "founder.hypernovatechnology@gmail.com",
+      "role": "admin_master",
+      "balance_added": 0.0,
+      "initial_equity": 1000000.0,
+      "profit_earned": 8940.0,
+      "custom_alpaca_key": "PK4EAUYBC7UG5NXBR23MAZZWYN",
+      "custom_alpaca_secret": "J4eBjKpKWWHvcq8ebpoEemPmWRw6pnmRHwzcBXXEhZ4g"
+    },
+    "trader_real": {
+      "password": "user123",
+      "email": "beginner.user@hypernovatechnology.com",
+      "role": "beginner",
+      "balance_added": 0.0,
+      "initial_equity": 50000.0,
+      "profit_earned": 1250.0,
+      "custom_alpaca_key": null,
+      "custom_alpaca_secret": null
+    },
+    "trader_pro": {
+      "password": "pro2026",
+      "email": "advanced.quant@hypernovatechnology.com",
+      "role": "advanced",
+      "balance_added": 0.0,
+      "initial_equity": 250000.0,
+      "profit_earned": 18450.0,
+      "custom_alpaca_key": null,
+      "custom_alpaca_secret": null
+    },
+    "beginner_user": {
+      "password": "pass",
+      "email": "beginner.trader@gmail.com",
+      "role": "beginner",
+      "balance_added": 0.0,
+      "initial_equity": 50000.0,
+      "profit_earned": 500.0
+    },
+    "pro_quant": {
+      "password": "pass",
+      "email": "pro.quant@gmail.com",
+      "role": "beginner",
+      "balance_added": 0.0,
+      "initial_equity": 50000.0,
+      "profit_earned": 500.0
+    }
+  },
+  "max_investment_limit": 5000.0,
+  "learning_metrics": {
+    "total_predictions": 718,
+    "accurate_predictions": 713,
+    "win_rate": 99.3,
+    "total_profit_generated": 142150.7
+  }
+}

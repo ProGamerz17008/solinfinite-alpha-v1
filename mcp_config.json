@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "solinfinte-alpaca": {
+      "command": "python",
+      "args": ["alpaca_cli.py"],
+      "env": {
+        "ALPACA_API_KEY": "PK4EAUYBC7UG5NXBR23MAZZWYN",
+        "ALPACA_SECRET_KEY": "J4eBjKpKWWHvcq8ebpoEemPmWRw6pnmRHwzcBXXEhZ4g",
+        "ALPACA_PAPER": "true"
+      },
+      "description": "Lets AI assistants (Claude, Cursor, VS Code, Antigravity) interact with Alpaca's paper trading environment through structured tools."
+    }
+  }
+}
