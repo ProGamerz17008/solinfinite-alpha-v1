@@ -372,27 +372,6 @@ def record_transaction(symbol, side, qty, price, order_id, rsi, macd, confidence
 
 from flask import Flask, render_template, jsonify, request, redirect, url_for, session, make_response, has_request_context
 
-# Helper to get active Alpaca Trading Client for current session or user
-def get_user_alpaca_client():
-    if not has_request_context():
-        return alpaca_client
-
-    user_key = session.get('user')
-    custom_key = session.get('custom_alpaca_key')
-    custom_secret = session.get('custom_alpaca_secret')
-
-    if not custom_key and user_key and user_key in users_db:
-        custom_key = users_db[user_key].get('custom_alpaca_key')
-        custom_secret = users_db[user_key].get('custom_alpaca_secret')
-
-    if custom_key and custom_secret and ALPACA_SDK_AVAILABLE:
-        try:
-            return TradingClient(custom_key, custom_secret, paper=True)
-        except Exception as e:
-            logging.error(f"User custom Alpaca init error: {e}")
-    return alpaca_client
-
-
 
 # ==============================================================================
 # 1. GEMINI API: MAIN AI THAT DOES THE TRADING & CHART ANALYSIS
@@ -780,6 +759,36 @@ SOLINFINITE ALPHA V1 Gateway - Powered by Gemini Main Trading AI Engine
     logging.info(f"Email alert ping dispatched to {target_email} ({role}) for {symbol}.")
     return entry
 
+# Helper to get active Alpaca Trading Client for current session or user
+def get_user_alpaca_client():
+    global alpaca_client
+    custom_key = session.get('custom_alpaca_key') if has_request_context() else None
+    custom_secret = session.get('custom_alpaca_secret') if has_request_context() else None
+
+    if not custom_key and has_request_context():
+        user_key = session.get('user')
+        if user_key and user_key in users_db:
+            custom_key = users_db[user_key].get('custom_alpaca_key')
+            custom_secret = users_db[user_key].get('custom_alpaca_secret')
+
+    if custom_key and custom_secret and ALPACA_SDK_AVAILABLE:
+        try:
+            return TradingClient(custom_key, custom_secret, paper=True)
+        except Exception as e:
+            logging.error(f"User custom Alpaca init error: {e}")
+
+    if not alpaca_client and ALPACA_SDK_AVAILABLE:
+        key = os.environ.get("ALPACA_API_KEY", "")
+        secret = os.environ.get("ALPACA_SECRET_KEY", "")
+        if key and secret:
+            try:
+                alpaca_client = TradingClient(key, secret, paper=True)
+                logging.info("Alpaca Trading Client auto-initialized from environment variables.")
+            except Exception as e:
+                logging.error(f"Alpaca client auto-init error: {e}")
+
+    return alpaca_client
+
 
 def get_account_data(user_key="admin"):
     """
@@ -788,16 +797,18 @@ def get_account_data(user_key="admin"):
     """
     user_info = users_db.get(user_key, users_db["admin"])
     user_role = user_info.get("role", "evaluator")
+    added_bal = float(user_info.get("balance_added", 0.0))
+    profit_earned = float(user_info.get("profit_earned", 3420.50))
 
     active_client = get_user_alpaca_client()
 
     if active_client:
         try:
             acc = active_client.get_account()
-            equity = float(acc.equity)
-            cash = float(acc.cash)
-            buying_power = float(acc.buying_power)
-            options_bp = float(getattr(acc, 'options_buying_power', buying_power))
+            equity = float(acc.equity) + added_bal
+            cash = float(acc.cash) + added_bal
+            buying_power = float(acc.buying_power) + (added_bal * 2)
+            options_bp = float(getattr(acc, 'options_buying_power', buying_power)) + added_bal
             
             return {
                 "success": True,
@@ -809,7 +820,7 @@ def get_account_data(user_key="admin"):
                 "status": acc.status.value if hasattr(acc.status, 'value') else str(acc.status),
                 "is_paper": True,
                 "user_role": user_role,
-                "profit_earned": user_info.get("profit_earned", 3420.50),
+                "profit_earned": profit_earned,
                 "max_investment_limit": max_investment_limit,
                 "has_custom_keys": bool(session.get('custom_alpaca_key')) if has_request_context() else False,
                 "raw": {
@@ -821,7 +832,7 @@ def get_account_data(user_key="admin"):
         except Exception as e:
             logging.error(f"Alpaca get_account error: {e}")
 
-    base_eq = 1000000.00
+    base_eq = 1000000.00 + added_bal
     return {
         "success": True,
         "equity": base_eq,
@@ -832,7 +843,7 @@ def get_account_data(user_key="admin"):
         "status": "ACTIVE",
         "is_paper": True,
         "user_role": user_role,
-        "profit_earned": user_info.get("profit_earned", 3420.50),
+        "profit_earned": profit_earned,
         "max_investment_limit": max_investment_limit,
         "has_custom_keys": bool(session.get('custom_alpaca_key')) if has_request_context() else False,
         "raw": {
