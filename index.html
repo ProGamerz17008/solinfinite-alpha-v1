@@ -1106,7 +1106,13 @@
                 });
             }
 
-            render() {
+                let now = performance.now();
+                if (this.lastRenderTime && now - this.lastRenderTime < 30) {
+                    requestAnimationFrame((t) => this.render(t));
+                    return;
+                }
+                this.lastRenderTime = now;
+
                 this.ctx.fillStyle = isDarkMode ? 'rgba(8, 12, 20, 0.22)' : 'rgba(248, 250, 252, 0.22)';
                 this.ctx.fillRect(0, 0, this.width, this.height);
 
@@ -1186,7 +1192,7 @@
                     this.ctx.stroke();
                 }
 
-                requestAnimationFrame(() => this.render());
+                requestAnimationFrame((t) => this.render(t));
             }
         }
 
@@ -1258,6 +1264,10 @@
             runAnalysisAndTrade(currentSymbol);
         }
 
+        let lastTransactionsJSON = '';
+        let lastPositionsJSON = '';
+        let lastLogsJSON = '';
+
         // 4. Fetch Account Data & Check Evaluator Role Rules
         async function fetchAccountData() {
             try {
@@ -1289,6 +1299,11 @@
                 const data = await res.json();
                 const tbody = document.getElementById('transactions-table-body');
                 if(!tbody) return;
+
+                const jsonStr = JSON.stringify(data.transactions || []);
+                if (jsonStr === lastTransactionsJSON) return;
+                lastTransactionsJSON = jsonStr;
+
                 tbody.innerHTML = '';
 
                 if(data.success && data.transactions && data.transactions.length > 0) {
@@ -1344,6 +1359,12 @@
                 const res = await fetch('/api/positions');
                 const data = await res.json();
                 const tbody = document.getElementById('positions-table-body');
+                if(!tbody) return;
+
+                const jsonStr = JSON.stringify(data.positions || []);
+                if (jsonStr === lastPositionsJSON) return;
+                lastPositionsJSON = jsonStr;
+
                 tbody.innerHTML = '';
 
                 if(data.success && data.positions.length > 0) {
@@ -1560,6 +1581,12 @@
                 const res = await fetch('/api/logs');
                 const data = await res.json();
                 const container = document.getElementById('audit-log-container');
+                if(!container) return;
+
+                const jsonStr = JSON.stringify(data.logs || []);
+                if (jsonStr === lastLogsJSON) return;
+                lastLogsJSON = jsonStr;
+
                 container.innerHTML = '';
 
                 if(data.success && data.logs) {
@@ -2606,10 +2633,10 @@
             }
         }
 
-        // Automatic 3-Second Poll Loop for Real-Time 24/7 Updates
+        // Automatic 5-Second Poll Loop for Real-Time 24/7 Updates (Lag-Free)
         setInterval(() => {
             fetchAccountData();
-        }, 3000);
+        }, 5000);
 
         window.addEventListener('DOMContentLoaded', () => {
             fetchAccountData();

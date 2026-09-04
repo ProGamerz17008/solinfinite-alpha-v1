@@ -100,8 +100,8 @@ users_db = {
         "balance_added": 0.0,
         "initial_equity": 1000000.0,
         "profit_earned": 3420.50,
-        "custom_alpaca_key": "PK4EAUYBC7UG5NXBR23MAZZWYN",
-        "custom_alpaca_secret": "J4eBjKpKWWHvcq8ebpoEemPmWRw6pnmRHwzcBXXEhZ4g"
+        "custom_alpaca_key": None,
+        "custom_alpaca_secret": None
     },
     "masteradmin": {
         "password": "admin2026",
@@ -110,8 +110,8 @@ users_db = {
         "balance_added": 0.0,
         "initial_equity": 1000000.0,
         "profit_earned": 8940.00,
-        "custom_alpaca_key": "PK4EAUYBC7UG5NXBR23MAZZWYN",
-        "custom_alpaca_secret": "J4eBjKpKWWHvcq8ebpoEemPmWRw6pnmRHwzcBXXEhZ4g"
+        "custom_alpaca_key": None,
+        "custom_alpaca_secret": None
     },
     "trader_real": {
         "password": "user123",
@@ -361,7 +361,9 @@ def record_transaction(symbol, side, qty, price, order_id, rsi, macd, confidence
         "status": "EXECUTED & RECORDED"
     }
     
+    global transactions_history
     transactions_history.insert(0, rec)
+    transactions_history = transactions_history[:50]
     save_transactions_db()
     logging.info(f"Transaction recorded in database: {tx_code} | {side} {symbol}")
     return rec
@@ -849,7 +851,7 @@ def background_trader_loop():
 
     while True:
         try:
-            time.sleep(5)  # Continuous 5-second evaluation loop
+            time.sleep(12)  # Optimized evaluation loop to prevent CPU/IO congestion
             
             with app.app_context():
                 if not ai_thread_running:
@@ -2064,4 +2066,4 @@ if __name__ == '__main__':
     print("  Vision AI       : Apify Image AI                              ")
     print("  URL: http://127.0.0.1:5000                                    ")
     print("=================================================================")
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
