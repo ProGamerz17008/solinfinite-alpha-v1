@@ -54,7 +54,7 @@ except ImportError:
     ALPACA_SDK_AVAILABLE = False
 
 # Initialize Flask App
-app = Flask(__name__, template_folder='templates', static_folder='static')
+app = Flask(__name__, template_folder='.', static_folder='static')
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "solinfinte-alpha-production-secret-key-2026")
 logging.basicConfig(level=logging.INFO)
 

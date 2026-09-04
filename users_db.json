@@ -6,7 +6,7 @@
       "role": "evaluator",
       "balance_added": 0.0,
       "initial_equity": 1000000.0,
-      "profit_earned": 44584.5,
+      "profit_earned": 45839.5,
       "custom_alpaca_key": "PK4EAUYBC7UG5NXBR23MAZZWYN",
       "custom_alpaca_secret": "J4eBjKpKWWHvcq8ebpoEemPmWRw6pnmRHwzcBXXEhZ4g"
     },
@@ -59,9 +59,9 @@
   },
   "max_investment_limit": 5000.0,
   "learning_metrics": {
-    "total_predictions": 1048,
-    "accurate_predictions": 1043,
-    "win_rate": 99.52,
-    "total_profit_generated": 204782.7
+    "total_predictions": 1099,
+    "accurate_predictions": 1094,
+    "win_rate": 99.55,
+    "total_profit_generated": 215621.45
   }
 }
