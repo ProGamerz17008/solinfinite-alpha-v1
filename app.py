@@ -789,15 +789,12 @@ def get_user_alpaca_client():
         except Exception as e:
             logging.error(f"User custom Alpaca init error: {e}")
 
-    if not alpaca_client and ALPACA_SDK_AVAILABLE:
-        key = os.environ.get("ALPACA_API_KEY", "")
-        secret = os.environ.get("ALPACA_SECRET_KEY", "")
-        if key and secret:
-            try:
-                alpaca_client = TradingClient(key, secret, paper=True)
-                logging.info("Alpaca Trading Client auto-initialized from environment variables.")
-            except Exception as e:
-                logging.error(f"Alpaca client auto-init error: {e}")
+    if not alpaca_client and ALPACA_SDK_AVAILABLE and ALPACA_API_KEY and ALPACA_SECRET_KEY:
+        try:
+            alpaca_client = TradingClient(ALPACA_API_KEY, ALPACA_SECRET_KEY, paper=True)
+            logging.info("Alpaca Trading Client auto-initialized from config keys.")
+        except Exception as e:
+            logging.error(f"Alpaca client auto-init error: {e}")
 
     return alpaca_client
 
@@ -813,14 +810,19 @@ def get_account_data(user_key="admin"):
     profit_earned = float(user_info.get("profit_earned", 3420.50))
 
     active_client = get_user_alpaca_client()
+    if not active_client and ALPACA_SDK_AVAILABLE and ALPACA_API_KEY and ALPACA_SECRET_KEY:
+        try:
+            active_client = TradingClient(ALPACA_API_KEY, ALPACA_SECRET_KEY, paper=True)
+        except Exception as client_err:
+            logging.error(f"Failed to create fallback Alpaca client: {client_err}")
 
     if active_client:
         try:
             acc = active_client.get_account()
             equity = float(acc.equity) + added_bal
             cash = float(acc.cash) + added_bal
-            buying_power = float(acc.buying_power) + (added_bal * 2)
-            options_bp = float(getattr(acc, 'options_buying_power', buying_power)) + added_bal
+            buying_power = float(acc.buying_power)
+            options_bp = float(getattr(acc, 'options_buying_power', buying_power))
             
             return {
                 "success": True,
@@ -843,26 +845,16 @@ def get_account_data(user_key="admin"):
             }
         except Exception as e:
             logging.error(f"Alpaca get_account error: {e}")
+            return {
+                "success": False,
+                "error": f"Alpaca Account Connection Error: {str(e)}",
+                "user_role": user_role
+            }
 
-    base_eq = 1000000.00 + added_bal
     return {
-        "success": True,
-        "equity": base_eq,
-        "cash": base_eq,
-        "buying_power": base_eq * 4,
-        "options_buying_power": base_eq,
-        "currency": "USD",
-        "status": "ACTIVE",
-        "is_paper": True,
-        "user_role": user_role,
-        "profit_earned": profit_earned,
-        "max_investment_limit": max_investment_limit,
-        "has_custom_keys": bool(session.get('custom_alpaca_key')) if has_request_context() else False,
-        "raw": {
-            "portfolio_value": f"${base_eq:,.2f}",
-            "cash_available": f"${base_eq:,.2f}",
-            "options_bp_formatted": f"${base_eq:,.2f}"
-        }
+        "success": False,
+        "error": "Alpaca SDK or API keys not configured.",
+        "user_role": user_role
     }
 
 
@@ -1364,24 +1356,7 @@ def api_positions():
                 "can_trade": can_trade
             }
 
-    # Ensure baseline fallback positions include BOTH Stocks and Crypto
-    if not positions_dict:
-        positions_dict["SPY"] = {
-            "symbol": "SPY", "qty": 15.0, "market_value": 8782.50, "cost_basis": 8640.00,
-            "unrealized_pl": 142.50, "unrealized_plpc": 1.65, "side": "long", "current_price": 585.50, "can_trade": can_trade
-        }
-        positions_dict["NVDA"] = {
-            "symbol": "NVDA", "qty": 25.0, "market_value": 3210.00, "cost_basis": 3050.00,
-            "unrealized_pl": 160.00, "unrealized_plpc": 5.25, "side": "long", "current_price": 128.40, "can_trade": can_trade
-        }
-        positions_dict["AAPL"] = {
-            "symbol": "AAPL", "qty": 20.0, "market_value": 4486.00, "cost_basis": 4320.00,
-            "unrealized_pl": 166.00, "unrealized_plpc": 3.84, "side": "long", "current_price": 224.30, "can_trade": can_trade
-        }
-        positions_dict["BTC/USD"] = {
-            "symbol": "BTC/USD", "qty": 0.35, "market_value": 22897.00, "cost_basis": 21800.00,
-            "unrealized_pl": 1097.00, "unrealized_plpc": 5.03, "side": "long", "current_price": 65420.00, "can_trade": can_trade
-        }
+
 
     positions_list = list(positions_dict.values())
     return jsonify({"success": True, "positions": positions_list, "user_role": user_role, "can_trade": can_trade})
