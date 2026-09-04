@@ -1106,6 +1106,7 @@
                 });
             }
 
+            render() {
                 let now = performance.now();
                 if (this.lastRenderTime && now - this.lastRenderTime < 30) {
                     requestAnimationFrame((t) => this.render(t));
